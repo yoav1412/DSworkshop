@@ -3,7 +3,7 @@ import numpy as np
 
 df = pd.read_csv(r"C:\Users\yoav1\OneDrive\Desktop\total.csv")
 
-def createSummaryStatistic(full_data,columns_to_aggregate, aggregation_functions):
+def createSummaryStatistics(full_data,columns_to_aggregate, aggregation_functions):
     """
     :param full_data: pandas dataframe containing all the raw data, one line per keystroke.
     :param columns_to_aggregate: list of columns that we wish to calculate summary statistics from
@@ -11,7 +11,7 @@ def createSummaryStatistic(full_data,columns_to_aggregate, aggregation_functions
     :return: a dataframe with 1 row per user, with requested summary statistics as columns, calculated individually for
              left/right/LL/LR/RR/RL keystrokes
     """
-    assert all([col in full_data.columns for col in ["ID","Hand","Direction"]])
+    assert all([col in full_data.columns for col in ["ID", "Hand", "Direction"]])
 
     # Calculate statistics for rows that match 'Left' / 'Right' keystrokes:
     left_right_stats = full_data.groupby(["ID", "Hand"])[columns_to_aggregate].\
