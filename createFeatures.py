@@ -59,8 +59,10 @@ data = create_summary_statistics(raw_tappy_data,
                                  columns_to_aggregate=["FlightTime","HoldTime", "LatencyTime"],
                                  aggregation_functions=[np.mean, np.std, stats.kurtosis, stats.skew])
 # Add a feature of the mean-diff between Left and Right HoldTimes, and Between LR and RL LatencyTimes:
-data["mean_diff_L_R_HoldTime"] = abs(data.R_HoldTime_mean - data.L_HoldTime_mean) # TODO: should this really be abs?
-data["mean_diff_LR_RL_LatencyTime"] = abs(data.RL_LatencyTime_mean - data.LR_LatencyTime_mean) # TODO: should this really be abs?
+data["mean_diff_L_R_HoldTime"] = data.R_HoldTime_mean - data.L_HoldTime_mean
+data["mean_diff_LR_RL_LatencyTime"] = data.RL_LatencyTime_mean - data.LR_LatencyTime_mean
+data["mean_diff_LL_RR_LatencyTime"] = data.LL_LatencyTime_mean - data.RR_LatencyTime_mean
+
 
 # Join with the Users data:
 data = data.merge(users_data, on="ID", how="left")
