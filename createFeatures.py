@@ -36,10 +36,13 @@ def create_summary_statistics(full_data,columns_to_aggregate, aggregation_functi
     rr_stats = lr_rl_ll_rr_stats[lr_rl_ll_rr_stats.Direction == "RR"]
     rr_stats.columns = ["RR_" + col + "_" + stat if col not in ("ID", "Direction") else col for col, stat in rr_stats.columns]
 
+    total_num_rows_count = full_data.groupby(["ID"])["Hand"].count().reset_index()
+    total_num_rows_count.columns = ["ID","total_count"]
     # Join all dfs together:
     res = leftHandStats.merge(rightHandStats, on="ID", how="outer").\
         merge(ll_stats, on="ID", how="outer").merge(lr_stats, on="ID", how="outer").\
-        merge(rl_stats, on="ID", how="outer").merge(rr_stats, on="ID", how="outer")
+        merge(rl_stats, on="ID", how="outer").merge(rr_stats, on="ID", how="outer").\
+        merge(total_num_rows_count, on="ID",how="outer")
 
     # Check if any users were lost during the aggregation process:
     if len(set(res.ID.values)) < len(set(full_data.ID.values)):
@@ -79,3 +82,6 @@ data["mean_diff_LL_RR_LatencyTime"] = data.LL_LatencyTime_mean - data.RR_Latency
 
 # Join with the Users data:
 data = data.merge(users_data, on="ID", how="left")
+
+
+data.to_csv(os.getcwd()+r"\\Data\\final.csv")
