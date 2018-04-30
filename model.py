@@ -20,7 +20,7 @@ ARTICLE_EXPLANATORY_VARIABLES =['L_HoldTime_mean', 'L_HoldTime_std', 'L_HoldTime
  'LR_LatencyTime_skew', 'RL_LatencyTime_mean', 'RL_LatencyTime_std', 'RL_LatencyTime_kurtosis', 'RL_LatencyTime_skew',
  'RR_LatencyTime_mean', 'RR_LatencyTime_std', 'RR_LatencyTime_kurtosis', 'RR_LatencyTime_skew', 'mean_diff_LR_RL_LatencyTime',
  'mean_diff_LL_RR_LatencyTime']
-
+HOLD_VARIABLES = [var for var in ARTICLE_EXPLANATORY_VARIABLES if "Hold" in var]
 
 
 def evaluate_classifier(clf, X, y, cross_validation_folds=10, round_result_to=4):
@@ -35,9 +35,11 @@ def evaluate_classifier(clf, X, y, cross_validation_folds=10, round_result_to=4)
     test_accuracy = np.mean(cross_val_score(estimator=clf, X=X, y=y, cv=cv_gen))
     clf.fit(X, y)
     train_accuracy = clf.score(X, y)
-    res = namedtuple("accuracy", "test train")
+    res = namedtuple("accuracy", "test train test_score train_score")
     res.test = "Test accuracy ({}-fold cross validation):".format(cross_validation_folds)+str(round(test_accuracy, round_result_to))
     res.train = "Train accuracy:"+str(round(train_accuracy, round_result_to))
+    res.test_score = test_accuracy
+    res.train_score = train_accuracy
     return res
 
 
@@ -57,41 +59,92 @@ data = data[data.Parkinsons == False | ( (data.Parkinsons == True) & (data.Impac
 # applying several classifiers to the raw data with the variables used in the article, without further processing:
 X = data[ARTICLE_EXPLANATORY_VARIABLES]
 y = data["Parkinsons"]
-
-
-
-########################################################
-###################### TRY 2 ###########################
-########################################################
-# applying normalization and PCA to the data, and attempt several models:
 classifiers = [LogisticRegression(), RandomForestClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), GradientBoostingClassifier()]
 for clf in classifiers:
     accuracy = evaluate_classifier(clf, X, y, cross_validation_folds=10)
     print(str(clf).split("(")[0]+":")
     print("\t"+accuracy.train)
     print("\t" + accuracy.test)
-# TODO: comment on results (models semm very overfitted, performance is basically random, etc.)
+# TODO: comment on results (models seem very overfitted, performance is basically random, etc.)
 
+########################################################
+###################### TRY 2 ###########################
+########################################################
+# We will now try to normalize the data, and cast it to a lower dimension with PCA.
+# For every dimension in (1,...,original_dim), we run all models and look for the best test score among those models:
 
-pca = PCA(n_components=2)
+def plot_labeled_data_1d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed")):
+    pdt = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == True]
+    pdf = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == False]
+    a = plt.scatter(pdf, [0 for i in range(len(pdf))])
+    b = plt.scatter(pdt, [0 for i in range(len(pdt))], color="red")
+    plt.title(title)
+    plt.legend([b, a], group_labels)
+    plt.show()
+
+def plot_labeled_data_2d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed")):
+    x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
+    x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
+    x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
+    x2_pd_false = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == False]
+    b = plt.scatter(x1_pd_true, x2_pd_true, color='red')
+    a = plt.scatter(x1_pd_false, x2_pd_false, color='blue')
+    plt.title(title)
+    plt.legend([b, a], group_labels)
+    plt.show()
+
 scaler = StandardScaler()
-X = scaler.fit_transform(X)
-reduced_X = pca.fit_transform(X)
+normalized_X = scaler.fit_transform(X)
+original_dim = len(normalized_X[0])
+tested_dimensions = []
+accuracies = []
+for dim in [i for i in range(1, original_dim+1)]:
+    if dim != original_dim:
+        pca = PCA(n_components=dim)
+        reduced_X = pca.fit_transform(normalized_X, y.values)
+    else:
+        reduced_X = normalized_X
+    best_accuracy = namedtuple("best_accuracy", "clf_name test_accuracy train_accuracy")
+    best_accuracy.test_accuracy = -1  #init
+    for clf in classifiers:
+        accuracy = evaluate_classifier(clf, reduced_X, y, cross_validation_folds=10)
+        if accuracy.test_score > best_accuracy.test_accuracy:
+            best_accuracy.test_accuracy = accuracy.test_score
+            best_accuracy.clf_name = str(clf).split("(")[0]
+    tested_dimensions.append(dim)
+    accuracies.append(best_accuracy.test_accuracy)
+plt.plot(tested_dimensions, accuracies) #TODO: add explanations to plot.
+# We can see that dimensionality reduction did not help.
 
 
+# Visualizing the data in 2d and 1d after PCA:
+pca = PCA(n_components=2)
+reduced_X = pca.fit_transform(normalized_X)
+plot_labeled_data_2d(reduced_X, y, "Casting to 2D using Principal Component Analysis")
 
-classifiers = [LogisticRegression(), RandomForestClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), GradientBoostingClassifier()]
+
+pca = PCA(n_components=1)
+reduced_X = pca.fit_transform(normalized_X)
+plot_labeled_data_1d(reduced_X, y, "Casting to 1D using Principal Component Analysis")
+
+
+########################################################
+###################### TRY 3 ###########################
+########################################################
+# We will now apply normalizaion and reduction to 1d wth LDA, in accordance with the original article:
+lda = LinearDiscriminantAnalysis()
+reduced_X =lda.fit_transform(normalized_X, y)
+plot_labeled_data_1d(reduced_X, y, "Casting to 1D using Linear Discriminant Analysis")
+
+best_accuracy.test_accuracy = -1  #init
 for clf in classifiers:
     accuracy = evaluate_classifier(clf, reduced_X, y, cross_validation_folds=10)
-    print(str(clf).split("(")[0]+":")
+    clf_name = str(clf).split("(")[0]
+    print(clf_name + ":")
     print("\t"+accuracy.train)
     print("\t" + accuracy.test)
+    if accuracy.test_score > best_accuracy.test_accuracy:
+        best_accuracy.test_accuracy = accuracy.test_score
+        best_accuracy.clf_name = clf_name
 
-# TODO: we can show following plot that shows that the data do not seem seperated in 2d after PCA
-x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i]==True]
-x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i]==False]
-x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i]==True]
-x2_pd_false = [reduced_X[i][1] for i in range(len(y)) if y.values[i]==False]
-plt.scatter(x1_pd_true,x2_pd_true, color='red')
-plt.scatter(x1_pd_false,x2_pd_false, color='blue')
-plt.show()
+#TODO: add an explanation here, noting that the best classifier is KNN which has low train accuracy. seems like the other more complex models are verfitting, therefore we can now try to divide the data into two groups like in the article (to reduce num of X vars and prevent overfitting)
