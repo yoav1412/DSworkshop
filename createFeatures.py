@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
+import os
 
-raw_tappy_data = pd.read_csv(r"C:\Users\yoav1\PycharmProjects\Parkinsons\Data\our_taps.csv")
-users_data = pd.read_csv(r"C:\Users\yoav1\PycharmProjects\Parkinsons\Data\USERS.csv")
+raw_tappy_data = pd.read_csv(os.getcwd()+r"\\Data\\OUT_TAPS.csv")
+users_data = pd.read_csv(os.getcwd() +r"\\Data\\USERS.csv")
 
 def create_summary_statistics(full_data,columns_to_aggregate, aggregation_functions):
     """
@@ -54,9 +55,21 @@ def create_summary_statistics(full_data,columns_to_aggregate, aggregation_functi
     return res
 
 
+# We check the correlation between the main columns in the raw data:
+RAW_DATA_COLUMNS = ["FlightTime", "HoldTime", "LatencyTime"]
+corrdf = pd.DataFrame()
+corrdf = corrdf.append([{"columns":"FlightTime-HoldTime",
+                "corr":stats.pearsonr(raw_tappy_data.FlightTime, raw_tappy_data.HoldTime)[0]}])
+corrdf = corrdf.append([{"columns":"FlightTime-LatencyTime",
+                "corr":stats.pearsonr(raw_tappy_data.FlightTime, raw_tappy_data.LatencyTime)[0]}])
+corrdf = corrdf.append([{"columns":"LatencyTime-HoldTime",
+                "corr":stats.pearsonr(raw_tappy_data.LatencyTime, raw_tappy_data.HoldTime)[0]}])
+print(corrdf)
+# TODO: insert an epxlanation that this explains why in the article they did not use "LatencyTime"
+
 # Create a processed dataset with desired features calculated per user:
 data = create_summary_statistics(raw_tappy_data,
-                                 columns_to_aggregate=["FlightTime","HoldTime", "LatencyTime"],
+                                 columns_to_aggregate=["FlightTime", "HoldTime", "LatencyTime"],
                                  aggregation_functions=[np.mean, np.std, stats.kurtosis, stats.skew])
 # Add a feature of the mean-diff between Left and Right HoldTimes, and Between LR and RL LatencyTimes:
 data["mean_diff_L_R_HoldTime"] = data.R_HoldTime_mean - data.L_HoldTime_mean
