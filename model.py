@@ -60,7 +60,10 @@ y = data["Parkinsons"]
 
 
 
-
+########################################################
+###################### TRY 2 ###########################
+########################################################
+# applying normalization and PCA to the data, and attempt several models:
 classifiers = [LogisticRegression(), RandomForestClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), GradientBoostingClassifier()]
 for clf in classifiers:
     accuracy = evaluate_classifier(clf, X, y, cross_validation_folds=10)
@@ -72,7 +75,7 @@ for clf in classifiers:
 
 pca = PCA(n_components=2)
 scaler = StandardScaler()
-X= scaler.fit_transform(X)
+X = scaler.fit_transform(X)
 reduced_X = pca.fit_transform(X)
 
 
