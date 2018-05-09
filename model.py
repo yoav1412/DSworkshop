@@ -131,6 +131,9 @@ for dim in [i for i in range(1, original_dim+1)]:
             best_accuracy.clf_name = str(clf).split("(")[0]
     tested_dimensions.append(dim)
     accuracies.append(best_accuracy.test_accuracy)
+plt.title("Best test accuracy by dimension (PCA)")
+plt.xlabel("Dimension")
+plt.ylabel("Test accuracy rate")
 plt.plot(tested_dimensions, accuracies) #TODO: add explanations to plot.
 # We can see that dimensionality reduction did not help.
 
