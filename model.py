@@ -183,3 +183,15 @@ y = data["Parkinsons"]
 
 normalized_X = scaler.fit_transform(X)
 reduced_X =lda.fit_transform(normalized_X, y)
+
+best_accuracy = namedtuple("best_accuracy", "clf_name test_accuracy train_accuracy")
+best_accuracy.test_accuracy = -1  #init
+for clf in classifiers:
+    accuracy = evaluate_classifier(clf, reduced_X, y, cross_validation_folds=10)
+    clf_name = str(clf).split("(")[0]
+    print(clf_name + ":")
+    print("\t"+accuracy.train)
+    print("\t" + accuracy.test)
+    if accuracy.test_score > best_accuracy.test_accuracy:
+        best_accuracy.test_accuracy = accuracy.test_score
+        best_accuracy.clf_name = clf_name
