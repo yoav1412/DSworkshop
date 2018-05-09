@@ -13,6 +13,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from collections import namedtuple
 from sklearn.decomposition import PCA
 from os import cpu_count
+from sklearn.base import BaseEstimator
+
 
 # The summary statistics used in the original article:
 ARTICLE_EXPLANATORY_VARIABLES =['L_HoldTime_mean', 'L_HoldTime_std', 'L_HoldTime_kurtosis', 'L_HoldTime_skew',
@@ -243,3 +245,35 @@ LATENCY_VARIABLES = [v for v in ALL_VARIABLES if "LatencyTime" in v]
 
 hold_x = data[HOLD_VARIABLES]
 latency_x = data[LATENCY_VARIABLES]
+
+class TwoGroupsWeightedModel(BaseEstimator):
+    def __init__(self, underlying_estimator_f, group1_var_names, group2_var_names, **kwargs):
+        self.group1_var_names = group1_var_names
+        self.group2_var_names = group2_var_names
+        #self.underlying_estimator_f = underlying_estimator_f
+        self.underlying_estimator = underlying_estimator_f(**kwargs)
+
+    def fit(self, X, y):
+        group1_X = X[self.group1_var_names]
+        group2_X = X[self.group2_var_names]
+
+        self.group1_estimator = self.underlying_estimator.fit(group1_X, y)
+        print("fit done")
+        print("train score:")
+        print(self.group1_estimator.score(group1_X,y))
+
+    def score(self, X, y):
+        return self.group1_estimator.score(X[self.group1_var_names], y)
+
+    # def get_params(self, deep=True):
+    #     return
+
+X = data[ARTICLE_EXPLANATORY_VARIABLES]
+y = data["Parkinsons"]
+tg = TwoGroupsWeightedModel(KNeighborsClassifier, ["L_HoldTime_mean"], ['L_HoldTime_kurtosis'], n_neighbors=6)
+param_grid = {'underlying_estimator':[KNeighborsClassifier],
+              'group1_var_names': [["L_HoldTime_mean"]],
+              'group2_var_names':[['L_HoldTime_kurtosis']],
+              "n_neighbors" : [2,6]}
+gs = GridSearchCV(tg, param_grid)
+gs.fit(X, y)
