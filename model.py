@@ -253,8 +253,9 @@ class TwoGroupsWeightedModel(BaseEstimator):
     def __init__(self, underlying_estimator_f, group1_var_names, group2_var_names, **kwargs):
         self.group1_var_names = group1_var_names
         self.group2_var_names = group2_var_names
-        #self.underlying_estimator_f = underlying_estimator_f
-        self.underlying_estimator = underlying_estimator_f(**kwargs)
+        self.underlying_estimator_f = underlying_estimator_f
+        self.underlying_estimator_params_dict = {k:v for k,v in kwargs.items()}
+        self.underlying_estimator = self.underlying_estimator_f(**kwargs)
 
     def fit(self, X, y):
         group1_X = X[self.group1_var_names]
@@ -268,9 +269,6 @@ class TwoGroupsWeightedModel(BaseEstimator):
     def score(self, X, y):
         return self.group1_estimator.score(X[self.group1_var_names], y)
 
-    # def get_params(self, deep=True):
-    #     return
-
 X = data[ARTICLE_EXPLANATORY_VARIABLES]
 y = data["Parkinsons"]
 tg = TwoGroupsWeightedModel(KNeighborsClassifier, ["L_HoldTime_mean"], ['L_HoldTime_kurtosis'], n_neighbors=6)
@@ -278,5 +276,4 @@ param_grid = {'underlying_estimator':[KNeighborsClassifier],
               'group1_var_names': [["L_HoldTime_mean"]],
               'group2_var_names':[['L_HoldTime_kurtosis']],
               "n_neighbors" : [2,6]}
-gs = GridSearchCV(tg, param_grid)
-gs.fit(X, y)
+evaluate_classifier(tg, X, y)
