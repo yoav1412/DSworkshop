@@ -3,7 +3,7 @@ import numpy as np
 import constants
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
-from sklearn.model_selection import cross_validate, cross_val_score, train_test_split, KFold, StratifiedKFold
+from sklearn.model_selection import cross_validate, cross_val_score, train_test_split, KFold, StratifiedKFold, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression, SGDClassifier
@@ -12,7 +12,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from collections import namedtuple
 from sklearn.decomposition import PCA
-
+from os import cpu_count
 
 # The summary statistics used in the original article:
 ARTICLE_EXPLANATORY_VARIABLES =['L_HoldTime_mean', 'L_HoldTime_std', 'L_HoldTime_kurtosis', 'L_HoldTime_skew',
@@ -172,6 +172,28 @@ for clf in classifiers:
         best_accuracy.test_accuracy = accuracy.test_score
         best_accuracy.clf_name = clf_name
 
+# We will try to optimize the learning-parameters of the one of the more complex models:
+clf = GradientBoostingClassifier()
+param_grid = {
+"learning_rate": [0.001, 0.01, 0.05, 0.1, 0.3, 0.5, 0.8],
+"n_estimators":[50, 100, 200, 400, 800],
+"max_depth":[1, 2, 4, 6, 8, 10]
+}
+grid_searcher = GridSearchCV(clf, param_grid, n_jobs=cpu_count()-1, cv=10)
+grid_searcher.fit(reduced_X, y)
+print("best score: ", grid_searcher.best_score_, "\nbest params: ", grid_searcher.best_params_)
+
+
+# We will now tr to optimize K for the KNN model:
+param_grid = {'n_neighbors':[k for k in range(1, 35+1)]}
+grid_searcher = GridSearchCV(KNeighborsClassifier(), param_grid, n_jobs=cpu_count()-1, cv=10)
+grid_searcher.fit(reduced_X, y)
+k_values = dict(grid_searcher.cv_results_)["param_n_neighbors"].tolist()
+test_accuracy = dict(grid_searcher.cv_results_)["mean_test_score"].tolist()
+plt.plot(k_values, test_accuracy) # TODO: add explanations to plot
+plt.show()
+
+
 #TODO: add an explanation here, noting that the best classifier is KNN which has low train accuracy. seems like the other more complex models are verfitting, therefore we can now try to divide the data into two groups like in the article (to reduce num of X vars and prevent overfitting)
 
 ########################################################
@@ -179,8 +201,8 @@ for clf in classifiers:
 ########################################################
 # We will now try to add some additional explanatory variables that were not used in the original article:
 # We add percentiles summary statistics and entropy:
-PERCENTILES = [c for c in data.columns.values if "perc" in c]
-ENTROPY = [c for c in data.columns.values if "entropy" in c]
+PERCENTILES = [c for c in data.columns.values if "perc" in c and "FlightTime" not in c]
+ENTROPY = [c for c in data.columns.values if "entropy" in c and "FlightTime" not in c]
 X = data[ARTICLE_EXPLANATORY_VARIABLES + PERCENTILES + ENTROPY]
 y = data["Parkinsons"]
 
@@ -198,3 +220,29 @@ for clf in classifiers:
     if accuracy.test_score > best_accuracy.test_accuracy:
         best_accuracy.test_accuracy = accuracy.test_score
         best_accuracy.clf_name = clf_name
+# We can see that with the new variables a 90+ % accuracy can be reached.
+
+# We will now try to tune the parameters of the bet classifier:
+clf = GradientBoostingClassifier()
+param_grid = {
+"learning_rate": [0.001,0.01,.05,0.1,0.3,0.5,0.8],
+"n_estimators":[50, 100, 200, 400, 800],
+"max_depth":[1,2,4,6,8,10]
+}
+grid_searcher = GridSearchCV(clf, param_grid, n_jobs=cpu_count()-1, cv=10, verbose=5)
+
+
+########################################################
+###################### TRY 5 ###########################
+########################################################
+
+# We will now try to split the explanatory variable into two groups, Hold variables and Latency variables (depending
+# on the orignal column they were created by). We will then assign a probability for each group seperately, and output
+# a final probability as a weighted average of these two probabilities.
+
+ALL_VARIABLES = ARTICLE_EXPLANATORY_VARIABLES + PERCENTILES + ENTROPY
+HOLD_VARIABLES = [v for v in ALL_VARIABLES if "HoldTime" in v]
+LATENCY_VARIABLES = [v for v in ALL_VARIABLES if "LatencyTime" in v]
+
+hold_x = data[HOLD_VARIABLES]
+latency_x = data[LATENCY_VARIABLES]
