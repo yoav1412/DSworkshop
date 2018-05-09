@@ -133,3 +133,4 @@ print([(round(p,2), label) for p, label in zip(final_probs, test_y)])
 
 final_preds = [1 if p>=0.5 else 0 for p in final_probs]
 print("accuracy: ", get_accuracy(final_preds, test_y))
+
