@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
-import os
+import constants
 
-raw_tappy_data = pd.read_csv(os.getcwd()+r"\\Data\\OUT_TAPS.csv")
-users_data = pd.read_csv(os.getcwd() +r"\\Data\\USERS.csv")
+raw_tappy_data = pd.read_csv(constants.DATA_FOLDER + r"\\OUT_TAPS.csv")
+users_data = pd.read_csv(constants.DATA_FOLDER + r"\\USERS.csv")
 
 def create_summary_statistics(full_data,columns_to_aggregate, aggregation_functions):
     """
@@ -84,4 +84,4 @@ data["mean_diff_LL_RR_LatencyTime"] = data.LL_LatencyTime_mean - data.RR_Latency
 data = data.merge(users_data, on="ID", how="left")
 
 
-data.to_csv(os.getcwd()+r"\\Data\\final.csv")
+data.to_csv(constants.DATA_FOLDER + r"\\final.csv")

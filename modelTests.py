@@ -11,8 +11,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, NuSVC
 from sklearn.base import clone, TransformerMixin
 from matplotlib import pyplot as plt
-import sys
-import os
+import constants
+
 
 def get_accuracy(test_preds, test_Y):
     errs = 0
@@ -45,7 +45,7 @@ scale = StandardScaler()
 
 
 
-full_set = pd.DataFrame.from_csv(os.getcwd() + "\\Data\\full_set_fixed.csv")
+full_set = pd.DataFrame.from_csv(constants.DATA_FOLDER + r"\\full_set_fixed.csv")
 
 #Normalize data:
 scaler = StandardScaler()

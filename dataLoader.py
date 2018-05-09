@@ -1,3 +1,4 @@
+import constants
 import os
 import math
 import pandas as pd
@@ -5,9 +6,9 @@ from pandas.errors import EmptyDataError
 import numpy as np
 from matplotlib import pyplot as plt
 
-USERS_ROOT_FOLDER = os.getcwd() +r"\\Data\\Archived users\\"
+USERS_ROOT_FOLDER = constants.DATA_FOLDER + r"\\Archived users\\"
 USERS_FILE_NAMES = os.listdir(USERS_ROOT_FOLDER)
-TAPS_ROOT_FOLDER =os.getcwd() +r"\\Data\\Tappy Data\\"
+TAPS_ROOT_FOLDER = constants.DATA_FOLDER + r"\\Tappy Data\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 
 TAPS_COLUMNS = ['ID', 'Date', 'TimeStamp', 'Hand', 'HoldTime', 'Direction', 'LatencyTime', 'FlightTime']
@@ -52,7 +53,7 @@ file_num = 0
 for file_name in USERS_FILE_NAMES:
     users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
 users = pd.DataFrame(users_list)
-users.to_csv(os.getcwd() +r"\\Data\\USERS.csv")
+users.to_csv(constants.DATA_FOLDER + r"\\USERS.csv")
 #taps = pd.read_csv(r"C:\Users\Dan\Downloads\TappyDSWorkshop\temp_taps.csv", low_memory=False)  # TODO: remove
 
 
@@ -107,7 +108,7 @@ print("there are {} unique user IDs in the Tappy data with no entry in the Users
 taps['ID'] = taps['ID'].apply(lambda x: x if x not in missing_data_users_ids else BAD_VALUE)
 filter_taps_by_col('ID')
 
-taps.to_csv(os.getcwd()+r"\\Data\\OUR_TAPS.csv")
+taps.to_csv(constants.DATA_FOLDER + r"\\OUR_TAPS.csv")
 # ############### Filter outliers ###############
 
 # Filter out outliers of HoldTime:

@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+import constants
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
-import os
 from sklearn.model_selection import cross_validate, cross_val_score, train_test_split, KFold, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, AdaBoostClassifier
@@ -43,7 +44,7 @@ def evaluate_classifier(clf, X, y, cross_validation_folds=10, round_result_to=4)
     return res
 
 
-data = pd.read_csv(os.getcwd()+r"\\Data\\final.csv")
+data = pd.read_csv(constants.DATA_FOLDER + r"\\final.csv")
 
 
 # Clean the data according to criteria stated in the article:
@@ -93,6 +94,21 @@ def plot_labeled_data_2d(reduced_X, y, title, group_labels =("diagnosed", "not_d
     plt.legend([b, a], group_labels)
     plt.show()
 
+def plot_labeled_data_3d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed")):
+    x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
+    x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
+    x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
+    x2_pd_false = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == False]
+    x3_pd_true = [reduced_X[i][2] for i in range(len(y)) if y.values[i] == True]
+    x3_pd_false = [reduced_X[i][2] for i in range(len(y)) if y.values[i] == False]
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    a = ax.scatter(x1_pd_false, x2_pd_false, x3_pd_false, c='blue')
+    b = ax.scatter(x1_pd_true, x2_pd_true, x3_pd_true, c='red')
+    plt.title(title)
+    plt.legend([b, a], group_labels)
+    plt.show()
+
 scaler = StandardScaler()
 normalized_X = scaler.fit_transform(X)
 original_dim = len(normalized_X[0])
@@ -117,7 +133,12 @@ plt.plot(tested_dimensions, accuracies) #TODO: add explanations to plot.
 # We can see that dimensionality reduction did not help.
 
 
-# Visualizing the data in 2d and 1d after PCA:
+# Visualizing the data in 3d, 2d and 1d after PCA:
+pca = PCA(n_components=3)
+reduced_X = pca.fit_transform(normalized_X)
+plot_labeled_data_3d(reduced_X, y, "Casting to 3D using Principal Component Analysis")
+
+
 pca = PCA(n_components=2)
 reduced_X = pca.fit_transform(normalized_X)
 plot_labeled_data_2d(reduced_X, y, "Casting to 2D using Principal Component Analysis")

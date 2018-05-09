@@ -11,6 +11,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import style
 from pandas.io.common import EmptyDataError
+import constants
+
 plt.rcParams['figure.figsize'] = (10, 6)
 style.use('ggplot')
 
@@ -58,7 +60,7 @@ users['Other'] = users['Other'] == 'True'
 print("Finished loading users data. moving to Tappy data..\n")
 
 # We now move on to key logging data:
-keys_root = r"C:\Users\yoav1\PycharmProjects\Parkinsons\Data\Tappy Data\\"
+keys_root = constants.DATA_FOLDER + r"\\Tappy Data\\"
 keys_fn_list = os.listdir(keys_root[:-1])
 
 
