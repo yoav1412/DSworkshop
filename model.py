@@ -192,7 +192,10 @@ grid_searcher = GridSearchCV(KNeighborsClassifier(), param_grid, n_jobs=cpu_coun
 grid_searcher.fit(reduced_X, y)
 k_values = dict(grid_searcher.cv_results_)["param_n_neighbors"].tolist()
 test_accuracy = dict(grid_searcher.cv_results_)["mean_test_score"].tolist()
-plt.plot(k_values, test_accuracy) # TODO: add explanations to plot
+plt.plot(k_values, test_accuracy)
+plt.title("kNN test accuracy by num. of neighbors")
+plt.xlabel("k")
+plt.ylabel("Test accuracy")
 plt.show()
 
 
