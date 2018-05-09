@@ -71,9 +71,27 @@ print(corrdf)
 # TODO: insert an epxlanation that this explains why in the article they did not use "LatencyTime"
 
 # Create a processed dataset with desired features calculated per user:
+
+def percnt90(series):
+    return np.percentile(series, 90)
+def percnt80(series):
+    return np.percentile(series, 80)
+def percnt70(series):
+    return np.percentile(series, 70)
+def percnt60(series):
+    return np.percentile(series, 60)
+def percnt40(series):
+    return np.percentile(series, 40)
+def percnt20(series):
+    return np.percentile(series, 20)
+def percnt10(series):
+    return np.percentile(series, 10)
+
+
 data = create_summary_statistics(raw_tappy_data,
                                  columns_to_aggregate=["FlightTime", "HoldTime", "LatencyTime"],
-                                 aggregation_functions=[np.mean, np.std, stats.kurtosis, stats.skew])
+                                 aggregation_functions=[np.mean, np.std, stats.kurtosis, stats.skew,
+                                                        stats.entropy,percnt10, percnt20, percnt40, percnt60, percnt70, percnt80, percnt90 ])
 # Add a feature of the mean-diff between Left and Right HoldTimes, and Between LR and RL LatencyTimes:
 data["mean_diff_L_R_HoldTime"] = data.R_HoldTime_mean - data.L_HoldTime_mean
 data["mean_diff_LR_RL_LatencyTime"] = data.RL_LatencyTime_mean - data.LR_LatencyTime_mean
@@ -84,4 +102,4 @@ data["mean_diff_LL_RR_LatencyTime"] = data.LL_LatencyTime_mean - data.RR_Latency
 data = data.merge(users_data, on="ID", how="left")
 
 
-data.to_csv(os.getcwd()+r"\\Data\\final.csv")
+data.to_csv(os.getcwd()+r"\\Data\\finalWithNewFeatures.csv")
