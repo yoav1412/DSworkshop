@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from sklearn.svm import SVC
+
 import constants
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
@@ -14,6 +16,7 @@ from collections import namedtuple
 from sklearn.decomposition import PCA
 from os import cpu_count
 from sklearn.base import BaseEstimator
+from sklearn.neural_network import MLPClassifier
 
 
 # The summary statistics used in the original article:
@@ -62,7 +65,13 @@ data = data[data.Parkinsons == False | ( (data.Parkinsons == True) & (data.Impac
 # applying several classifiers to the raw data with the variables used in the article, without further processing:
 X = data[ARTICLE_EXPLANATORY_VARIABLES]
 y = data["Parkinsons"]
-classifiers = [LogisticRegression(), RandomForestClassifier(), AdaBoostClassifier(), KNeighborsClassifier(), GradientBoostingClassifier()]
+classifiers = [LogisticRegression(),
+               RandomForestClassifier(),
+               AdaBoostClassifier(),
+               KNeighborsClassifier(),
+               GradientBoostingClassifier(),
+               SVC(kernel='rbf'),
+               ]
 for clf in classifiers:
     accuracy = evaluate_classifier(clf, X, y, cross_validation_folds=10)
     print(str(clf).split("(")[0]+":")
