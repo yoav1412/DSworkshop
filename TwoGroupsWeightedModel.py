@@ -1,4 +1,6 @@
 from sklearn.base import BaseEstimator, ClassifierMixin
+import importlib
+from copy import deepcopy
 
 
 class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
@@ -7,7 +9,9 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
     It then applies the "underlying estimator" on each group separately, and assigns every observations a
     probability that is a weighted mixture of the probability assigned by underlying estimator to each group.
     """
-    def __init__(self, underlying_estimator_class_name, group1_var_names, group2_var_names, group1_weight, group2_weight,
+    def __init__(self, underlying_estimator_module_and_class, group1_var_names, group2_var_names,
+                 transformer_module_and_class,
+                 group1_weight, group2_weight, steps,
                  weighting_function=None, classification_threshold=0.5, **kwargs):
         """
         :param underlying_estimator_class_name: a string holding the class name of the classifier to be
@@ -21,25 +25,51 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
         :param classification_threshold: probability threshold for classification as class '1'.
         :param kwargs: All init parameters for the underlying classifier.
         """
+        self.steps = steps
         self.group1_var_names = group1_var_names
         self.group2_var_names = group2_var_names
         self.underlying_estimator_params_dict = {k:v for k,v in kwargs.items()}
-        self.underlying_estimator_class_name = underlying_estimator_class_name
-        try:
-            self.underlying_estimator = globals()[self.underlying_estimator_class_name](**kwargs)
-        except KeyError:
-            print("Error: given class name for underlying estimator is not defined.")
-            raise
+        self.underlying_estimator_module_and_class = underlying_estimator_module_and_class
+        self.underlying_estimator = \
+            self._instantiate_class_from_module(self.underlying_estimator_module_and_class.split(" ")[0],
+                                            self.underlying_estimator_module_and_class.split(" ")[1])
+
+        self.transformer_module_and_class = transformer_module_and_class
+        if self.transformer_module_and_class is None: #TODO
+            self.transformer = None
+        else:
+            self.transformer = \
+                self._instantiate_class_from_module(self.transformer_module_and_class.split(" ")[0],
+                                                    self.transformer_module_and_class.split(" ")[1])
+
         self.weighting_function = weighting_function
         self.group1_weight = group1_weight
         self.group2_weight = group2_weight
         self.classification_threshold = classification_threshold
+        self.group1_X, self.group2_X = None, None
+
+
+    def fit_transform(self, X, y):
+        return #TODO
+        if self.transformer is None: #TODO
+            return
+        if not hasattr(self.transformer, "fit_transform"):
+            print("Error: transformer does not implement 'fit_transform'. can't transform")
+            return
+
+        self.group1_transformer = deepcopy(self.transformer.fit(X[self.group1_var_names], y))
+        self.group2_transformer = deepcopy(self.transformer.fit(X[self.group2_var_names], y))
+
+        self.group1_X = self.group1_transformer.transform(X[self.group1_var_names])
+        self.group2_X = self.group2_transformer.transform(X[self.group2_var_names])
 
     def fit(self, X, y):
-        group1_X = X[self.group1_var_names]
-        group2_X = X[self.group2_var_names]
-        self.group1_estimator = self.underlying_estimator.fit(group1_X, y)
-        self.group2_estimator = self.underlying_estimator.fit(group2_X, y)
+        self.fit_transform(X, y) # If no transformer was given, this will do nothing
+        if (self.group1_X is None) or (self.group2_X is None): # i.e, no transformation was applied
+            self.group1_X = X[self.group1_var_names]
+            self.group2_X = X[self.group2_var_names]
+        self.group1_estimator = deepcopy(self.underlying_estimator.fit(self.group1_X, y))
+        self.group2_estimator = deepcopy(self.underlying_estimator.fit(self.group2_X, y))
 
     def predict_proba(self, X):
         group1_predictions = self.group1_estimator.predict_proba(X[self.group1_var_names])
@@ -56,3 +86,10 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
         probs_for_class_1 = probs[:,1]
         class_predictions = probs_for_class_1 > self.classification_threshold
         return class_predictions
+
+    # TODO: if this class oly handles pipelines, no need for this..
+    def _instantiate_class_from_module(self, module_name, class_name):
+        module = importlib.import_module(module_name)
+        class_ = getattr(module, class_name)
+        instance = class_(self.steps)
+        return instance
