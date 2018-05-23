@@ -12,6 +12,7 @@ TAPS_ROOT_FOLDER = constants.DATA_FOLDER + r"\\Tappy Data\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 
 TAPS_COLUMNS = ['ID', 'Date', 'TimeStamp', 'Hand', 'HoldTime', 'Direction', 'LatencyTime', 'FlightTime']
+TAPS_FINAL_COLUMNS = list(set(TAPS_COLUMNS) - {'Date', 'TimeStamp'})
 FLOAT_COLUMNS = ['HoldTime', 'LatencyTime', 'FlightTime']
 DIRECTIONS = ['LL', 'LR', 'RL', 'RR', 'LS', 'SL', 'RS', 'SR', 'SS']
 HANDS = ['L', 'R', 'S']
@@ -53,8 +54,7 @@ file_num = 0
 for file_name in USERS_FILE_NAMES:
     users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
 users = pd.DataFrame(users_list)
-users.to_csv(constants.DATA_FOLDER + r"\\USERS.csv")
-#taps = pd.read_csv(r"C:\Users\Dan\Downloads\TappyDSWorkshop\temp_taps.csv", low_memory=False)  # TODO: remove
+users.to_csv(constants.USERS_INPUT)
 
 
 # TODO: commented out for performance
@@ -108,16 +108,32 @@ print("there are {} unique user IDs in the Tappy data with no entry in the Users
 taps['ID'] = taps['ID'].apply(lambda x: x if x not in missing_data_users_ids else BAD_VALUE)
 filter_taps_by_col('ID')
 
-taps.to_csv(constants.DATA_FOLDER + r"\\OUR_TAPS.csv")
+
 # ############### Filter outliers ###############
+
+def filter_column_by_quantile(column, threshold):
+    global taps
+    len_before = len(taps)
+    taps = taps[taps[column] < np.percentile(taps[column], threshold)]
+    len_after = len(taps)
+    print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
+
 
 # Filter out outliers of HoldTime:
 
-# After the percentile 99.993 we see significantly higher values, which are definitely outliers.
 X = np.linspace(99.96, 99.9999, 20)
 Y = [np.percentile(taps['HoldTime'], x) for x in X]
 plt.plot(X, Y)
 plt.title("HoldTime Percentiles")
 plt.xlabel("Percent")
 plt.ylabel("Percentile Value")
-taps = taps[taps['HoldTime'] < np.percentile(taps['HoldTime'], 99.993)]
+
+# After the percentile 99.993 we see significantly higher values, which are definitely outliers.
+filter_column_by_quantile('HoldTime', 99.993)
+
+
+# ############### Save to file ###############
+
+# Keep only necessary columns and save to file
+taps = taps[TAPS_FINAL_COLUMNS]
+taps.to_csv(constants.TAPS_INPUT)

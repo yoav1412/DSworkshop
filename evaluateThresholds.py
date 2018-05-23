@@ -2,7 +2,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.preprocessing import StandardScaler
 
 from model import classifiers, evaluate_classifier, ARTICLE_EXPLANATORY_VARIABLES
-import constants
+from constants import *
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -15,7 +15,7 @@ best_accuracies_for_threshold = []
 
 for threshold in thresholds:
     # filter the data
-    data = pd.read_csv(constants.DATA_FOLDER + r"\\final.csv")
+    data = pd.read_csv(FINAL_DATASET)
     data = data[data.total_count >= threshold]  # take only users with more than 2000 keystrokes
     data = data[data.Levadopa == False]
     data = data[data.Parkinsons == False | ((data.Parkinsons == True) & (data.Impact == "Mild"))]
