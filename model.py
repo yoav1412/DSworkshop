@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.svm import SVC
 
-import constants
+from constants import *
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import pyplot as plt
 from sklearn.model_selection import cross_validate, cross_val_score, train_test_split, KFold, StratifiedKFold, GridSearchCV
@@ -49,11 +49,11 @@ def evaluate_classifier(clf, X, y, cross_validation_folds=10, round_result_to=4)
     return res
 
 
-data = pd.read_csv(constants.DATA_FOLDER + r"\\final.csv")
+data = pd.read_csv(FINAL_DATASET)
 
 
 # Clean the data according to criteria stated in the article:
-data = data[data.total_count >= 2000]  # take only users with more than 2000 keystrokes
+data = data[data.total_count >= TAPS_THRESHOLD]  # take only users with more than THRESHOLD keystrokes
 data = data[data.Levadopa == False]
 data = data[data.Parkinsons == False | ( (data.Parkinsons == True) & (data.Impact == "Mild"))]
 
