@@ -114,14 +114,10 @@ taps.to_csv(constants.DATA_FOLDER + r"\\OUR_TAPS.csv")
 # Filter out outliers of HoldTime:
 
 # After the percentile 99.993 we see significantly higher values, which are definitely outliers.
-X = np.linspace(99.99, 99.9999, 20)
+X = np.linspace(99.96, 99.9999, 20)
 Y = [np.percentile(taps['HoldTime'], x) for x in X]
 plt.plot(X, Y)
+plt.title("HoldTime Percentiles")
+plt.xlabel("Percent")
+plt.ylabel("Percentile Value")
 taps = taps[taps['HoldTime'] < np.percentile(taps['HoldTime'], 99.993)]
-
-# TODO's:
-#
-#   1. Finish cleaning - melman
-#   2. Create df with features, join with users - yoav
-#   3. Make some plots on "users" and "taps" - nili
-#   4. Run first model, build a procedure for model running
