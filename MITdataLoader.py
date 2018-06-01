@@ -6,11 +6,13 @@ from pandas.errors import EmptyDataError
 import numpy as np
 from matplotlib import pyplot as plt
 
+SHOW_PLOTS = False # if true, plots will be printed in the quantiles filter section
+
 USERS = TEST_DATA_FOLDER + r"\\users.csv"
 TAPS_ROOT_FOLDER = TEST_DATA_FOLDER + r"\\taps\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 TAPS_LOAD_COLUMNS = ["Key", "HoldTime", "releaseTime", "pressTime"]
-FLOAT_COLUMNS = ["HoldTime", "LatencyTime", "FlightTime"]
+FLOAT_COLUMNS = ["HoldTime", "LatencyTime", "FlightTime", "pressTime"]
 TAPS_COLUMNS = ["ID", "Hand", "Direction"] + FLOAT_COLUMNS
 
 DIRECTIONS = ['LL', 'LR', 'RL', 'RR', 'LS', 'SL', 'RS', 'SR', 'SS']
@@ -25,6 +27,8 @@ RIGHT_IGNORE_KEYS = ['underscore', 'semicolon', 'question', 'plus', 'apostrophe'
 LEFT_IGNORE_KEYS = ['tab', 'escape', 'control_l', 'alt_l', 'shift_l', 'caps_lock']
 MIDDLE_KEYS = ['space']
 MIDDLE_IGNORE_KEYS = ['6']
+
+PRESS_TIME_BIN_LENGTH = 90 # seconds
 
 BAD_VALUE = "BAD_VALUE"
 NEG_VALUE = "NEGATIVE_VALUE"
@@ -127,7 +131,7 @@ def invalidate_direction(direction):
 
 # ############### Filter users that have severe parkinson ###############
 
-users = users[users["gt"] == False | ((users["gt"] == True) & (users["updrs108"] < 20))]  # <20 is Mild parkinson
+# users = users[users["gt"] == False | ((users["gt"] == True) & (users["updrs108"] < 20))]  # <20 is Mild parkinson
 
 # ############### Read taps, build columns and remove bad values ###############
 
@@ -140,12 +144,18 @@ taps = pd.concat(taps_list)
 # try to convert float fields to float, set error label else, and invalidate
 for col in FLOAT_COLUMNS:
     taps[col] = taps[col].apply(str_to_float)
+for col in FLOAT_COLUMNS:
     filter_taps_by_col(col)
 
 taps['Hand'] = taps['Hand'].apply(invalidate_hand)
 taps['Direction'] = taps['Direction'].apply(invalidate_direction)
 filter_taps_by_col('Hand')
 filter_taps_by_col('Direction')
+
+# Group to bin indexes by pressTime
+max_press = (int(max(taps["pressTime"]) / 90) + 1) * 90 + 1
+user_bins = [i for i in range(0, max_press, 90)]
+taps["binIndex"] = pd.cut(taps["pressTime"], user_bins)
 
 
 # ############### Filter outliers ###############
@@ -168,8 +178,9 @@ def filter_column_by_quantile(column, threshold):
     print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
 
 
-for col in FLOAT_COLUMNS:
-    plot_percentile(col)
+if SHOW_PLOTS:
+    for col in FLOAT_COLUMNS:
+        plot_percentile(col)
 
 filter_column_by_quantile("HoldTime", 99.99)
 filter_column_by_quantile("LatencyTime", 99.4)
@@ -181,6 +192,6 @@ filter_column_by_quantile("FlightTime", 99.95)
 taps.to_csv(TEST_TAPS_INPUT, index=False)
 
 # Users file
-users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons'}, inplace=True)
-users = users[['ID', 'Parkinsons']]
+users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons', 'updrs108': 'UDPRS'}, inplace=True)
+users = users[['ID', 'Parkinsons', 'UDPRS']]
 users.to_csv(TEST_USERS_INPUT, index=False)
