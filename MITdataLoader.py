@@ -5,11 +5,12 @@ import pandas as pd
 from pandas.errors import EmptyDataError
 import numpy as np
 from matplotlib import pyplot as plt
+from localConstants import *
 
 SHOW_PLOTS = False # if true, plots will be printed in the quantiles filter section
 
-USERS = TEST_DATA_FOLDER + r"\\users.csv"
-TAPS_ROOT_FOLDER = TEST_DATA_FOLDER + r"\\taps\\"
+USERS = MIT_DATA_FOLDER + r"\\users.csv"
+TAPS_ROOT_FOLDER = MIT_DATA_FOLDER + r"\\taps\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 TAPS_LOAD_COLUMNS = ["Key", "HoldTime", "releaseTime", "pressTime"]
 FLOAT_COLUMNS = ["HoldTime", "LatencyTime", "FlightTime", "pressTime"]
