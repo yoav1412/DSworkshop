@@ -178,6 +178,8 @@ filter_column_by_quantile("FlightTime", 99.95)
 # ############### Save to file ###############
 
 # Taps file
+for col in FLOAT_COLUMNS:
+    taps[col] = taps[col]*1000 #ms to sec
 taps.to_csv(TEST_TAPS_INPUT, index=False)
 
 # Users file
