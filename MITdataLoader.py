@@ -189,9 +189,9 @@ filter_column_by_quantile("FlightTime", 99.95)
 # ############### Save to file ###############
 
 # Taps file
-taps.to_csv(TEST_TAPS_INPUT, index=False)
+taps.to_csv(MIT_TAPS_INPUT, index=False)
 
 # Users file
 users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons', 'updrs108': 'UDPRS'}, inplace=True)
 users = users[['ID', 'Parkinsons', 'UDPRS']]
-users.to_csv(TEST_USERS_INPUT, index=False)
+users.to_csv(MIT_USERS_INPUT, index=False)
