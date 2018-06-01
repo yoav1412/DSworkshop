@@ -7,9 +7,19 @@ import numpy as np
 from matplotlib import pyplot as plt
 from localConstants import *
 
-SHOW_PLOTS = False # if true, plots will be printed in the quantiles filter section
+# ===============
+# Configurations:
+# ===============
 
-USERS = MIT_DATA_FOLDER + r"\\users.csv"
+# if true, plots will be printed in the quantiles filter section
+SHOW_PLOTS = False
+# choose which filename of users to load (group1/group2)
+LOAD_USERS_FILE = "usersGroup1"
+
+
+
+
+USERS = MIT_DATA_FOLDER + r"\\" + LOAD_USERS_FILE + r".csv"
 TAPS_ROOT_FOLDER = MIT_DATA_FOLDER + r"\\taps\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 TAPS_LOAD_COLUMNS = ["Key", "HoldTime", "releaseTime", "pressTime"]
@@ -101,7 +111,10 @@ def filter_taps_by_col(column):
     global taps
     len_before = len(taps)
     for err_val in ERROR_VALUES:
-        taps = taps[taps[column] != err_val]
+        try:
+            taps = taps[taps[column] != err_val]
+        except:
+            continue  # todo: patch, because it throws comparison error when there is no match to err_val
     len_after = len(taps)
     print("Filtered out {} rows with bad values in column '{}'".format((len_before - len_after), column))
 
@@ -190,6 +203,8 @@ filter_column_by_quantile("FlightTime", 99.95)
 # ############### Save to file ###############
 
 # Taps file
+taps[["HoldTime", "LatencyTime", "FlightTime"]] =\
+    1000 * taps[["HoldTime", "LatencyTime", "FlightTime"]] # to milliseconds
 taps.to_csv(MIT_TAPS_INPUT, index=False)
 
 # Users file
