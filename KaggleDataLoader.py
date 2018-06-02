@@ -165,8 +165,8 @@ def parse_cumulative_timestamps():
 
 time0 = time.time()
 parse_cumulative_timestamps()
-time1 = time.time()
-print("Parsing ended after {0:.2f} seconds".format(time1 - time0))
+time = time.time() - time0
+print("Parsing ended after {0:.2f} seconds".format(time))
 
 
 # Group to bin indexes by PressTimeCumulative
@@ -177,11 +177,6 @@ def build_bins():
     user_bins = [i for i in range(0, max_press, 90)]
     taps["binIndex"] = pd.cut((taps["PressTimeCumulative"]), user_bins)
 
-
-time0 = time.time()
-build_bins()
-time1 = time.time()
-print("Binning of timestamps took {0:.2f} seconds".format(time1 - time0))
 
 # ############### Save to file ###############
 
