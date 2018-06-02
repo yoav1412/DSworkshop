@@ -7,20 +7,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from localConstants import *
 
-# TODO: should create csv's for both groups in one go
-
 # ===============
 # Configurations:
 # ===============
 
 # if true, plots will be printed in the quantiles filter section
-SHOW_PLOTS = False
-# choose which filename of users to load (group1/group2)
-LOAD_USERS_FILE = "users"
+SHOW_PLOTS = True
 
-
-
-USERS = MIT_DATA_FOLDER + r"\\" + LOAD_USERS_FILE + r".csv"
+USERS = MIT_DATA_FOLDER + r"\\users.csv"
 TAPS_ROOT_FOLDER = MIT_DATA_FOLDER + r"\\taps\\"
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 TAPS_LOAD_COLUMNS = ["Key", "HoldTime", "releaseTime", "pressTime"]
@@ -40,26 +34,16 @@ LEFT_IGNORE_KEYS = ['tab', 'escape', 'control_l', 'alt_l', 'shift_l', 'caps_lock
 MIDDLE_KEYS = ['space']
 MIDDLE_IGNORE_KEYS = ['6']
 
-PRESS_TIME_BIN_LENGTH = 90 # seconds
+PRESS_TIME_BIN_LENGTH = 90  # seconds
 
 BAD_VALUE = "BAD_VALUE"
 NEG_VALUE = "NEGATIVE_VALUE"
 NAN_VALUE = "NAN_VALUE"
 ERROR_VALUES = [NEG_VALUE, BAD_VALUE, NAN_VALUE]
 
-users = pd.read_csv(USERS, delimiter=',', header=0, error_bad_lines=False,
-                    low_memory=False, usecols=["pID", "gt", "updrs108", "file_1", "file_2"])
 
-# TODO: fix this func. withut the comment out it won't handle both groups
 def file_to_id(filename):
-    return int(filename[filename.index(".")+1 : filename.index("_")])
-#     index_by_file_1 = users.index[users.file_1 == filename].tolist()
-# #    index_by_file_2 = users.index[users.file_2 == filename].tolist()
-# #    index_as_list = max(index_by_file_1, index_by_file_2)
-#     index_as_list = index_by_file_1
-#     if len(index_as_list) > 0:
-#         return users.loc[index_as_list[0]]["pID"]
-#     return -1
+    return int(filename[filename.index(".") + 1: filename.index("_")])
 
 
 def set_hand(row):
@@ -146,11 +130,9 @@ def invalidate_direction(direction):
     return BAD_VALUE
 
 
-# ############### Filter users that have severe parkinson ###############
-
-# users = users[users["gt"] == False | ((users["gt"] == True) & (users["updrs108"] < 20))]  # <20 is Mild parkinson
-
 # ############### Read taps, build columns and remove bad values ###############
+users = pd.read_csv(USERS, delimiter=',', header=0, error_bad_lines=False,
+                    low_memory=False, usecols=["pID", "gt", "updrs108", "file_1", "file_2"])
 
 taps_list = []
 for file_name in TAPS_FILE_NAMES:
@@ -206,8 +188,8 @@ filter_column_by_quantile("FlightTime", 99.95)
 # ############### Save to file ###############
 
 # Taps file
-taps[["HoldTime", "LatencyTime", "FlightTime"]] =\
-    1000 * taps[["HoldTime", "LatencyTime", "FlightTime"]] # to milliseconds
+taps[["HoldTime", "LatencyTime", "FlightTime"]] = \
+    1000 * taps[["HoldTime", "LatencyTime", "FlightTime"]]  # to milliseconds
 taps.to_csv(MIT_TAPS_INPUT, index=False)
 
 # Users file
