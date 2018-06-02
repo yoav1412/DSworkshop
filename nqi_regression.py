@@ -11,7 +11,7 @@ def list_diff(first, second):
     second = set(second)
     return [item for item in first if item not in second]
 
-mit_nqi_features = pd.read_csv(MIT_GROUP1_NQI_FEATURES)
+mit_nqi_features = pd.read_csv(MIT_NQI_FEATURES)
 mit_users = pd.read_csv(MIT_USERS_INPUT)
 
 data = mit_nqi_features.merge(mit_users, on="ID").dropna().reset_index().drop("index", axis=1)

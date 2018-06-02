@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from localConstants import *
 
+# TODO: should create csv's for both groups in one go
+
 # ===============
 # Configurations:
 # ===============
@@ -14,8 +16,7 @@ from localConstants import *
 # if true, plots will be printed in the quantiles filter section
 SHOW_PLOTS = False
 # choose which filename of users to load (group1/group2)
-LOAD_USERS_FILE = "usersGroup1"
-
+LOAD_USERS_FILE = "users"
 
 
 
@@ -49,14 +50,16 @@ ERROR_VALUES = [NEG_VALUE, BAD_VALUE, NAN_VALUE]
 users = pd.read_csv(USERS, delimiter=',', header=0, error_bad_lines=False,
                     low_memory=False, usecols=["pID", "gt", "updrs108", "file_1", "file_2"])
 
-
+# TODO: fix this func. withut the comment out it won't handle both groups
 def file_to_id(filename):
-    index_by_file_1 = users.index[users.file_1 == filename].tolist()
-    index_by_file_2 = users.index[users.file_2 == filename].tolist()
-    index_as_list = max(index_by_file_1, index_by_file_2)
-    if len(index_as_list) > 0:
-        return users.loc[index_as_list[0]]["pID"]
-    return -1
+    return int(filename[filename.index(".")+1 : filename.index("_")])
+#     index_by_file_1 = users.index[users.file_1 == filename].tolist()
+# #    index_by_file_2 = users.index[users.file_2 == filename].tolist()
+# #    index_as_list = max(index_by_file_1, index_by_file_2)
+#     index_as_list = index_by_file_1
+#     if len(index_as_list) > 0:
+#         return users.loc[index_as_list[0]]["pID"]
+#     return -1
 
 
 def set_hand(row):
