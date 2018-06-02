@@ -36,7 +36,10 @@ def read_user_file(filename, dir_path):
             result[key] = value.strip()
     return result
 
+
 file_num = 0
+
+
 def read_taps_file(filename, dir_path):
     global file_num
     file_num += 1
@@ -57,7 +60,7 @@ def create_merged_users_details_file():
     for file_name in USERS_FILE_NAMES:
         users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
     users = pd.DataFrame(users_list)
-    users.to_csv(constants.KAGGLE_USERS_INPUT)
+    users.to_csv(constants.KAGGLE_USERS_INPUT, index=False)
     return users
 
 
@@ -149,8 +152,7 @@ def add_cumulative_timestamps_column(df):
     print("Parsing ended, took {} seconds".format(round(time, 2)))
     return df
 
-#
-# # ##################################### LOAD FULL TAPS DATASET FROM KAGGLE #####################################
+#### TO NOTEBOOK ####
 #
 # # Create dataframe from files, perform basic cleaning
 # kaggle_users = create_merged_users_details_file()
@@ -191,18 +193,18 @@ def add_cumulative_timestamps_column(df):
 #
 #
 # # Group to bin indexes by the cumulative timestamps
-# def build_bins(df):
+# def build_bins(df, bin_size_seconds):
 #     df["PressTimeCumulative"] = df["PressTimeCumulative"] / 1000
-#     max_press = (int(max((df["PressTimeCumulative"])) / 90) + 1) * 90 + 1
-#     user_bins = [i for i in range(0, max_press, 90)]
+#     max_press = (int(max((df["PressTimeCumulative"])) / bin_size_seconds) + 1) * bin_size_seconds + 1
+#     user_bins = [i for i in range(0, max_press, bin_size_seconds)]
 #     df["binIndex"] = pd.cut((df["PressTimeCumulative"]), user_bins)
 #     return df
 #
 #
-# kaggle_taps = build_bins(kaggle_taps)
+# kaggle_taps = build_bins(kaggle_taps, 90)
 #
 # # Keep only necessary columns and save to file
 # kaggle_taps = kaggle_taps[TAPS_FINAL_COLUMNS + ['binIndex']]
 # kaggle_taps.head()
 #
-# kaggle_taps.to_csv(constants.KAGGLE_TAPS_INPUT)
+# kaggle_taps.to_csv(constants.KAGGLE_TAPS_INPUT, index=False)

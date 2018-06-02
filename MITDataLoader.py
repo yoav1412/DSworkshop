@@ -71,7 +71,7 @@ def read_taps_file(filename, dir_path):
     try:
         user_file_df = pd.read_csv(dir_path + filename, delimiter=',', header=None, error_bad_lines=False,
                                    names=TAPS_LOAD_COLUMNS, low_memory=False)
-        user_file_df["ID"] = file_to_id(file_name)
+        user_file_df["ID"] = file_to_id(filename)
 
         # If no user found for this file
         if user_file_df["ID"][0] == -1:
@@ -94,16 +94,24 @@ def read_taps_file(filename, dir_path):
     return user_file_df
 
 
-def filter_taps_by_col(column):
-    global taps
-    len_before = len(taps)
+def create_merged_taps_dataframe():
+    taps_list = []
+    for file_name in TAPS_FILE_NAMES:
+        df = read_taps_file(file_name, TAPS_ROOT_FOLDER)
+        taps_list.append(df)
+    return pd.concat(taps_list)
+
+
+def filter_taps_by_col(df, column):
+    len_before = len(df)
     for err_val in ERROR_VALUES:
         try:
-            taps = taps[taps[column] != err_val]
-        except:
-            continue  # todo: patch, because it throws comparison error when there is no match to err_val
-    len_after = len(taps)
+            df = df[df[column] != err_val]
+        except TypeError:
+            continue  # Patch due to a bug, throws an error when all lines are fine (not containing error)
+    len_after = len(df)
     print("Filtered out {} rows with bad values in column '{}'".format((len_before - len_after), column))
+    return df
 
 
 def str_to_float(s):
@@ -130,69 +138,69 @@ def invalidate_direction(direction):
     return BAD_VALUE
 
 
-# ############### Read taps, build columns and remove bad values ###############
-users = pd.read_csv(USERS, delimiter=',', header=0, error_bad_lines=False,
-                    low_memory=False, usecols=["pID", "gt", "updrs108", "file_1", "file_2"])
-
-taps_list = []
-for file_name in TAPS_FILE_NAMES:
-    df = read_taps_file(file_name, TAPS_ROOT_FOLDER)
-    taps_list.append(df)
-taps = pd.concat(taps_list)
-
-# try to convert float fields to float, set error label else, and invalidate
-for col in FLOAT_COLUMNS:
-    taps[col] = taps[col].apply(str_to_float)
-for col in FLOAT_COLUMNS:
-    filter_taps_by_col(col)
-
-taps['Hand'] = taps['Hand'].apply(invalidate_hand)
-taps['Direction'] = taps['Direction'].apply(invalidate_direction)
-filter_taps_by_col('Hand')
-filter_taps_by_col('Direction')
-
-# Group to bin indexes by pressTime
-max_press = (int(max(taps["pressTime"]) / 90) + 1) * 90 + 1
-user_bins = [i for i in range(0, max_press, 90)]
-taps["binIndex"] = pd.cut(taps["pressTime"], user_bins)
-
-
-# ############### Filter outliers ###############
-
-def plot_percentile(column):
-    X = np.linspace(98, 99.9999, 40)
-    Y = [np.percentile(taps[column], x) for x in X]
-    plt.plot(X, Y)
-    plt.title(column + " Percentiles")
-    plt.xlabel("Percent")
-    plt.ylabel("Percentile Value")
-    plt.show()
-
-
-def filter_column_by_quantile(column, threshold):
-    global taps
-    len_before = len(taps)
-    taps = taps[taps[column] < np.percentile(taps[column], threshold)]
-    len_after = len(taps)
-    print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
-
-
-if SHOW_PLOTS:
+def clean_errors_and_bad_values(df):
+    # try to convert float fields to float, set error label else, and invalidate
     for col in FLOAT_COLUMNS:
-        plot_percentile(col)
+        df[col] = df[col].apply(str_to_float)
+    for col in FLOAT_COLUMNS:
+        df = filter_taps_by_col(df, col)
 
-filter_column_by_quantile("HoldTime", 99.99)
-filter_column_by_quantile("LatencyTime", 99.4)
-filter_column_by_quantile("FlightTime", 99.95)
+    df['Hand'] = df['Hand'].apply(invalidate_hand)
+    df['Direction'] = df['Direction'].apply(invalidate_direction)
+    filter_taps_by_col(df, 'Hand')
+    filter_taps_by_col(df, 'Direction')
+    return df
 
-# ############### Save to file ###############
 
-# Taps file
-taps[["HoldTime", "LatencyTime", "FlightTime"]] = \
-    1000 * taps[["HoldTime", "LatencyTime", "FlightTime"]]  # to milliseconds
-taps.to_csv(MIT_TAPS_INPUT, index=False)
-
-# Users file
-users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons', 'updrs108': 'UDPRS'}, inplace=True)
-users = users[['ID', 'Parkinsons', 'UDPRS']]
-users.to_csv(MIT_USERS_INPUT, index=False)
+# #### TO NOTEBOOK ####
+#
+# mit_users = pd.read_csv(USERS, delimiter=',', header=0, error_bad_lines=False,
+#                         low_memory=False, usecols=["pID", "gt", "updrs108", "file_1", "file_2"])
+#
+# mit_taps = create_merged_taps_dataframe()
+# mit_taps = clean_errors_and_bad_values(mit_taps)
+#
+# # Group to bin indexes by pressTime and add as a new column
+# bin_size_seconds = 90
+# max_press = (int(max(mit_taps["pressTime"]) / bin_size_seconds) + 1) * bin_size_seconds + 1
+# user_bins = [i for i in range(0, max_press, bin_size_seconds)]
+# mit_taps["binIndex"] = pd.cut(mit_taps["pressTime"], user_bins)
+#
+#
+# # Filter outliers
+#
+# def plot_percentile(df, column, start, end, bins):
+#     X = np.linspace(start, end, bins)
+#     Y = [np.percentile(df[column], x) for x in X]
+#     plt.plot(X, Y)
+#     plt.title(column + " Percentiles")
+#     plt.xlabel("Percent")
+#     plt.ylabel("Percentile Value")
+#     plt.show()
+#
+#
+# def filter_column_by_quantile(df, column, threshold):
+#     len_before = len(df)
+#     df = df[df[column] < np.percentile(df[column], threshold)]
+#     len_after = len(df)
+#     print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
+#
+#
+# if SHOW_PLOTS:
+#     for col in FLOAT_COLUMNS:
+#         plot_percentile(mit_taps, col, 98, 99.9999, 40)
+#
+# # Filter according to the results in the plots
+# filter_column_by_quantile(mit_taps, "HoldTime", 99.99)
+# filter_column_by_quantile(mit_taps, "LatencyTime", 99.4)
+# filter_column_by_quantile(mit_taps, "FlightTime", 99.95)
+#
+# # Save to file - Taps file
+# mit_taps[["HoldTime", "LatencyTime", "FlightTime"]] = \
+#     1000 * mit_taps[["HoldTime", "LatencyTime", "FlightTime"]]  # to milliseconds
+# mit_taps.to_csv(MIT_TAPS_INPUT, index=False)
+#
+# # Save to file - Users file
+# mit_users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons', 'updrs108': 'UDPRS'}, inplace=True)
+# mit_users = mit_users[['ID', 'Parkinsons', 'UDPRS']]
+# mit_users.to_csv(MIT_USERS_INPUT, index=False)
