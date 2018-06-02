@@ -4,7 +4,6 @@ import pandas as pd
 from constants import *
 
 
-
 def agg_outliers(series):
     IQR = iqr(series)
     first_quartile = np.percentile(series, 25)
@@ -40,14 +39,18 @@ def agg_histogram_bin3(series):
 
 MIN_PRESSES_PER_BUCKET_THRESHOLD = 0 # Filtering on count didn't prove usefull.
 
-taps = pd.read_csv(MIT_TAPS_INPUT)
-grouped_taps = taps.groupby(["ID", "binIndex"])["HoldTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.count_nonzero])
-t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg([np.mean, np.std]).reset_index()
-nqi_calculator_input = grouped_taps.reset_index()
-nqi_calculator_input = nqi_calculator_input.merge(t, on=["ID","binIndex"])
-nqi_calculator_input = nqi_calculator_input.rename(columns={"FlightTime":"mean_flight"})
+# Create the NQI features for both the MIT and the Kaggle Datasets:
+for taps_input_file_path, nqi_features_output_filepath in \
+        zip([MIT_TAPS_INPUT, KAGGLE_TAPS_INPUT],[MIT_NQI_FEATURES, KAGGLE_NQI_FEATURES]):
 
-nqi_calculator_input = nqi_calculator_input[nqi_calculator_input.count_nonzero > MIN_PRESSES_PER_BUCKET_THRESHOLD]
+    taps = pd.read_csv(taps_input_file_path)
+    grouped_taps = taps.groupby(["ID", "binIndex"])["HoldTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+                                                        agg_histogram_bin2, agg_histogram_bin3, np.count_nonzero])
+    t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg([np.mean, np.std]).reset_index()
+    nqi_calculator_input = grouped_taps.reset_index()
+    nqi_calculator_input = nqi_calculator_input.merge(t, on=["ID","binIndex"])
+    nqi_calculator_input = nqi_calculator_input.rename(columns={"FlightTime": "mean_flight"})
 
-nqi_calculator_input.to_csv(MIT_NQI_FEATURES, index=False)
+    nqi_calculator_input = nqi_calculator_input[nqi_calculator_input.count_nonzero > MIN_PRESSES_PER_BUCKET_THRESHOLD]
+
+    nqi_calculator_input.to_csv(nqi_features_output_filepath, index=False)
