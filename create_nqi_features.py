@@ -1,4 +1,4 @@
-from scipy.stats import iqr
+from scipy.stats import iqr, kurtosis, skew
 import numpy as np
 import pandas as pd
 from constants import *
@@ -38,14 +38,16 @@ def agg_histogram_bin2(series):
 def agg_histogram_bin3(series):
     return agg_histogram(series, 3)
 
-
+MIN_PRESSES_PER_BUCKET_THRESHOLD = 0 # Filtering on count didn't prove usefull.
 
 taps = pd.read_csv(MIT_TAPS_INPUT)
 grouped_taps = taps.groupby(["ID", "binIndex"])["HoldTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3])
-t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg(np.mean).reset_index()
+                                                    agg_histogram_bin2, agg_histogram_bin3, np.count_nonzero])
+t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg([np.mean, np.std]).reset_index()
 nqi_calculator_input = grouped_taps.reset_index()
 nqi_calculator_input = nqi_calculator_input.merge(t, on=["ID","binIndex"])
 nqi_calculator_input = nqi_calculator_input.rename(columns={"FlightTime":"mean_flight"})
+
+nqi_calculator_input = nqi_calculator_input[nqi_calculator_input.count_nonzero > MIN_PRESSES_PER_BUCKET_THRESHOLD]
 
 nqi_calculator_input.to_csv(MIT_NQI_FEATURES, index=False)
