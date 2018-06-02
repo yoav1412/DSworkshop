@@ -1,11 +1,4 @@
-import pandas as pd
 import numpy as np
-from scipy import stats
-from constants import *
-
-raw_tappy_data = pd.read_csv(TAPS_INPUT)
-users_data = pd.read_csv(USERS_INPUT)
-
 
 def create_summary_statistics(full_data, columns_to_aggregate, aggregation_functions):
     """
@@ -65,22 +58,6 @@ def create_summary_statistics(full_data, columns_to_aggregate, aggregation_funct
     return res
 
 
-# We check the correlation between the main columns in the raw data:
-RAW_DATA_COLUMNS = ["FlightTime", "HoldTime", "LatencyTime"]
-corrdf = pd.DataFrame()
-corrdf = corrdf.append([{"columns": "FlightTime-HoldTime",
-                         "corr": stats.pearsonr(raw_tappy_data.FlightTime, raw_tappy_data.HoldTime)[0]}])
-corrdf = corrdf.append([{"columns": "FlightTime-LatencyTime",
-                         "corr": stats.pearsonr(raw_tappy_data.FlightTime, raw_tappy_data.LatencyTime)[0]}])
-corrdf = corrdf.append([{"columns": "LatencyTime-HoldTime",
-                         "corr": stats.pearsonr(raw_tappy_data.LatencyTime, raw_tappy_data.HoldTime)[0]}])
-print(corrdf)
-
-
-# TODO: insert an epxlanation that this explains why in the article they did not use "LatencyTime"
-
-# Create a processed dataset with desired features calculated per user:
-
 def percnt90(series):
     return np.percentile(series, 90)
 
@@ -107,19 +84,3 @@ def percnt20(series):
 
 def percnt10(series):
     return np.percentile(series, 10)
-
-
-data = create_summary_statistics(raw_tappy_data,
-                                 columns_to_aggregate=["FlightTime", "HoldTime", "LatencyTime"],
-                                 aggregation_functions=[np.mean, np.std, stats.kurtosis, stats.skew,
-                                                        stats.entropy, percnt10, percnt20, percnt40, percnt60, percnt70,
-                                                        percnt80, percnt90])
-# Add a feature of the mean-diff between Left and Right HoldTimes, and Between LR and RL LatencyTimes:
-data["mean_diff_L_R_HoldTime"] = data.R_HoldTime_mean - data.L_HoldTime_mean
-data["mean_diff_LR_RL_LatencyTime"] = data.RL_LatencyTime_mean - data.LR_LatencyTime_mean
-data["mean_diff_LL_RR_LatencyTime"] = data.LL_LatencyTime_mean - data.RR_LatencyTime_mean
-
-# Join with the Users data:
-data = data.merge(users_data, on="ID", how="left")
-
-data.to_csv(FINAL_DATASET)
