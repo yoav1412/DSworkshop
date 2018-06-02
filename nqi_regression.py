@@ -3,12 +3,13 @@ import numpy as np
 import random
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPRegressor
+from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.svm import SVR, SVC
 from sklearn.ensemble import BaggingRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostRegressor, \
     RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.decomposition import PCA
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import roc_auc_score
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -26,11 +27,10 @@ mit_users = pd.read_csv(MIT_USERS_INPUT)
 
 data = mit_nqi_features.merge(mit_users, on="ID").dropna().reset_index().drop("index", axis=1)
 
-PREDICTION_COLUMNS = list_diff(data.columns, ["UDPRS", "Parkinsons", 'binIndex', 'ID'])
+PREDICTION_COLUMNS = list_diff(data.columns, ["UDPRS", "Parkinsons", 'binIndex', 'ID','count_nonzero'])
 
 scaler = StandardScaler()
-min_max_scaler = MinMaxScaler(feature_range=(-1, 1))
-
+min_max_scaler = MinMaxScaler(feature_range=(0, 1))
 
 # Split the unified MIT dataset to train and test according to ID's:
 train_mit_data = data[data.ID <= 100].copy()
