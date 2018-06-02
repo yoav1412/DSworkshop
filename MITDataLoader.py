@@ -165,6 +165,7 @@ def clean_errors_and_bad_values(df):
 # max_press = (int(max(mit_taps["pressTime"]) / bin_size_seconds) + 1) * bin_size_seconds + 1
 # user_bins = [i for i in range(0, max_press, bin_size_seconds)]
 # mit_taps["binIndex"] = pd.cut(mit_taps["pressTime"], user_bins)
+# mit_taps.head()
 #
 #
 # # Filter outliers
@@ -198,9 +199,13 @@ def clean_errors_and_bad_values(df):
 # # Save to file - Taps file
 # mit_taps[["HoldTime", "LatencyTime", "FlightTime"]] = \
 #     1000 * mit_taps[["HoldTime", "LatencyTime", "FlightTime"]]  # to milliseconds
+# mit_taps.head()
+#
 # mit_taps.to_csv(MIT_TAPS_INPUT, index=False)
 #
 # # Save to file - Users file
 # mit_users.rename(columns={'pID': 'ID', 'gt': 'Parkinsons', 'updrs108': 'UDPRS'}, inplace=True)
 # mit_users = mit_users[['ID', 'Parkinsons', 'UDPRS']]
+# mit_users.head()
+#
 # mit_users.to_csv(MIT_USERS_INPUT, index=False)
