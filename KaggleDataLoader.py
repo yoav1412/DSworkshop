@@ -37,6 +37,9 @@ def read_user_file(filename, dir_path):
     return result
 
 
+file_num = 0
+
+
 def read_taps_file(filename, dir_path):
     global file_num
     file_num += 1
@@ -52,27 +55,30 @@ def read_taps_file(filename, dir_path):
     return df
 
 
-users_list = []
-file_num = 0
-for file_name in USERS_FILE_NAMES:
-    users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
-users = pd.DataFrame(users_list)
-users.to_csv(constants.KAGGLE_USERS_INPUT)
+def create_merged_users_details_file():
+    users_list = []
+    for file_name in USERS_FILE_NAMES:
+        users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
+    users = pd.DataFrame(users_list)
+    users.to_csv(constants.KAGGLE_USERS_INPUT, index=False)
+    return users
 
-taps_list = []
-for file_name in TAPS_FILE_NAMES:
-    taps_list.append(read_taps_file(file_name, TAPS_ROOT_FOLDER))
-taps = pd.concat(taps_list)
+
+def create_merged_taps_dataframe():
+    taps_list = []
+    for file_name in TAPS_FILE_NAMES:
+        taps_list.append(read_taps_file(file_name, TAPS_ROOT_FOLDER))
+    return pd.concat(taps_list)
 
 
 # ############### Update datatypes of taps dataframe and filter out bad values ###############
 
-def filter_taps_by_col(col):
-    global taps
-    len_before = len(taps)
+def filter_error_values_from_column(col):
+    global kaggle_taps
+    len_before = len(kaggle_taps)
     for err_val in ERROR_VALUES:
-        taps = taps[taps[col] != err_val]
-    len_after = len(taps)
+        kaggle_taps = kaggle_taps[kaggle_taps[col].astype(str) != err_val]
+    len_after = len(kaggle_taps)
     print("Filtered out {} rows with bad values in column '{}'".format((len_before - len_after), col))
 
 
@@ -104,75 +110,101 @@ def diff_from_initial(row):
         return x
 
 
-# try to convert float fields to float, set error label else, and invalidate
-for col in FLOAT_COLUMNS:
-    taps[col] = taps[col].apply(str_to_float)
-    filter_taps_by_col(col)
-
-# invalidate Direction column
-taps['Direction'] = taps['Direction'].apply(lambda x: x if x in DIRECTIONS else BAD_VALUE)
-filter_taps_by_col('Direction')
-
-# invalidate Hand column
-taps['Hand'] = taps['Hand'].apply(lambda x: x if x in HANDS else BAD_VALUE)
-filter_taps_by_col('Hand')
-
-# invalidate all rows with invalid user ID
-taps['ID'] = taps['ID'].apply(lambda x: x if len(str(x)) == 10 else BAD_VALUE)
-missing_data_users_ids = set(u for u in taps["ID"].values) - set(u for u in users["ID"].values)
-print("there are {} unique user IDs in the Tappy data with no entry in the Users file".format(
-    len(missing_data_users_ids)))
-taps['ID'] = taps['ID'].apply(lambda x: x if x not in missing_data_users_ids else BAD_VALUE)
-filter_taps_by_col('ID')
+def clean_bad_values(df):
+    # try to convert float fields to float, set error label else, and invalidate
+    for col in FLOAT_COLUMNS:
+        df[col] = df[col].apply(str_to_float)
+        filter_error_values_from_column(col)
+    # invalidate Direction column
+    df['Direction'] = df['Direction'].apply(lambda x: x if x in DIRECTIONS else BAD_VALUE)
+    filter_error_values_from_column('Direction')
+    # invalidate Hand column
+    df['Hand'] = df['Hand'].apply(lambda x: x if x in HANDS else BAD_VALUE)
+    filter_error_values_from_column('Hand')
+    return df
 
 
-# ############### Filter outliers ###############
-
-def filter_column_by_quantile(column, threshold):
-    global taps
-    len_before = len(taps)
-    taps = taps[taps[column] < np.percentile(taps[column], threshold)]
-    len_after = len(taps)
-    print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
-
-
-# Filter out outliers of HoldTime:
-
-X = np.linspace(99.96, 99.9999, 20)
-Y = [np.percentile(taps['HoldTime'], x) for x in X]
-plt.plot(X, Y)
-plt.title("HoldTime Percentiles")
-plt.xlabel("Percent")
-plt.ylabel("Percentile Value")
-
-# After the percentile 99.993 we see significantly higher values, which are definitely outliers.
-filter_column_by_quantile('HoldTime', 99.993)
+def clean_incompatible_user_ids(df):
+    # invalidate all rows with invalid user ID
+    df['ID'] = df['ID'].apply(lambda x: x if len(str(x)) == 10 else BAD_VALUE)
+    missing_data_users_ids = set(u for u in df["ID"].values) - set(u for u in kaggle_users["ID"].values)
+    print("there are {} unique user IDs in the Tappy data with no entry in the Users file".format(
+        len(missing_data_users_ids)))
+    df['ID'] = df['ID'].apply(lambda x: x if x not in missing_data_users_ids else BAD_VALUE)
+    filter_error_values_from_column('ID')
+    return df
 
 
-# Add parsed date and time column + calculate cumulative time
-time0 = time.time()
-print("Starting parsing of timestamps into cumulative time...")
-taps['ParsedDateTime'] = taps['Date'].astype(str) + " " + taps['TimeStamp']
-taps = taps.drop(['Date', 'TimeStamp'], axis=1)  # save some memory because the df is huge
-taps['ParsedDateTime'] = taps['ParsedDateTime'].apply(parsed_time_to_unix)
-initial_timestamp_per_id = taps.groupby(['ID'])['ParsedDateTime'].min()
-taps['PressTimeCumulative'] = taps.apply(diff_from_initial, axis=1)
-taps = taps.drop(['ParsedDateTime'], axis=1)  # save some memory because the df is huge
-time1 = time.time()
-print("Parsing ended after {} milliseconds".format(time1 - time0))
-filter_taps_by_col('PressTimeCumulative')
+def add_cumulative_timestamps_column(df):
+    global time, initial_timestamp_per_id
+    time0 = time.time()
 
-# Group to bin indexes by PressTimeCumulative
-time0 = time.time()
-taps["PressTimeCumulative"] = taps["PressTimeCumulative"] / 1000
-max_press = (int(max((taps["PressTimeCumulative"])) / 90) + 1) * 90 + 1
-user_bins = [i for i in range(0, max_press, 90)]
-taps["binIndex"] = pd.cut((taps["PressTimeCumulative"]), user_bins)
-time1 = time.time()
-print("Binning of timestamps took {} seconds".format(time1 - time0))
+    print("Starting parsing of timestamps into cumulative time...")
+    df['ParsedDateTime'] = df['Date'].astype(str) + " " + df['TimeStamp']
+    df = df.drop(['Date', 'TimeStamp'], axis=1)  # save some memory because the df is huge
+    df['ParsedDateTime'] = df['ParsedDateTime'].apply(parsed_time_to_unix)
+    initial_timestamp_per_id = df.groupby(['ID'])['ParsedDateTime'].min()
+    df['PressTimeCumulative'] = df.apply(diff_from_initial, axis=1)
+    df = df.drop(['ParsedDateTime'], axis=1)  # save some memory because the df is huge
+    filter_error_values_from_column('PressTimeCumulative')
 
-# ############### Save to file ###############
+    time = time.time() - time0
+    print("Parsing ended, took {} seconds".format(round(time, 2)))
+    return df
 
-# Keep only necessary columns and save to file
-taps = taps[TAPS_FINAL_COLUMNS + ['binIndex']]
-taps.to_csv(constants.KAGGLE_TAPS_INPUT)
+#### TO NOTEBOOK ####
+#
+# # Create dataframe from files, perform basic cleaning
+# kaggle_users = create_merged_users_details_file()
+# kaggle_users.head()
+#
+# kaggle_taps = create_merged_taps_dataframe()
+# kaggle_taps = clean_bad_values(kaggle_taps)
+# kaggle_taps = clean_incompatible_user_ids(kaggle_taps)
+# kaggle_taps.head()
+#
+#
+# # Filter outliers
+# def filter_column_by_quantile(df, column, threshold):
+#     len_before = len(df)
+#     df = df[df[column] < np.percentile(df[column], threshold)]
+#     len_after = len(df)
+#     print("Filtered out {} rows with outliers in column '{}'".format((len_before - len_after), column))
+#     return df
+#
+#
+# def plot_percentiles_of_column(df, col, start, end, bins):
+#     X = np.linspace(start, end, bins)
+#     Y = [np.percentile(df[col], x) for x in X]
+#     plt.plot(X, Y)
+#     plt.title(col + " Percentiles")
+#     plt.xlabel("Percent")
+#     plt.ylabel("Percentile Value")
+#     plt.show()
+#
+#
+# # Filter out outliers of HoldTime:
+# plot_percentiles_of_column(kaggle_taps, 'HoldTime', 99.96, 99.9999, 20)
+# # After the percentile 99.993 we see significantly higher values, which are definitely outliers.
+# kaggle_taps = filter_column_by_quantile(kaggle_taps, 'HoldTime', 99.993)
+#
+# # Add parsed date and time column + calculate cumulative time
+# kaggle_taps = add_cumulative_timestamps_column(kaggle_taps)
+#
+#
+# # Group to bin indexes by the cumulative timestamps
+# def build_bins(df, bin_size_seconds):
+#     df["PressTimeCumulative"] = df["PressTimeCumulative"] / 1000
+#     max_press = (int(max((df["PressTimeCumulative"])) / bin_size_seconds) + 1) * bin_size_seconds + 1
+#     user_bins = [i for i in range(0, max_press, bin_size_seconds)]
+#     df["binIndex"] = pd.cut((df["PressTimeCumulative"]), user_bins)
+#     return df
+#
+#
+# kaggle_taps = build_bins(kaggle_taps, 90)
+#
+# # Keep only necessary columns and save to file
+# kaggle_taps = kaggle_taps[TAPS_FINAL_COLUMNS + ['binIndex']]
+# kaggle_taps.head()
+#
+# kaggle_taps.to_csv(constants.KAGGLE_TAPS_INPUT, index=False)
