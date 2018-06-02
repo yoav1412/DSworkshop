@@ -71,7 +71,7 @@ def filter_taps_by_col(col):
     global taps
     len_before = len(taps)
     for err_val in ERROR_VALUES:
-        taps = taps[taps[col] != err_val]
+        taps = taps[taps[col].astype(str) != err_val]
     len_after = len(taps)
     print("Filtered out {} rows with bad values in column '{}'".format((len_before - len_after), col))
 
@@ -144,32 +144,44 @@ plt.plot(X, Y)
 plt.title("HoldTime Percentiles")
 plt.xlabel("Percent")
 plt.ylabel("Percentile Value")
+# plt.show #TODO
 
 # After the percentile 99.993 we see significantly higher values, which are definitely outliers.
 filter_column_by_quantile('HoldTime', 99.993)
 
 
 # Add parsed date and time column + calculate cumulative time
+def parse_cumulative_timestamps():
+    global taps, initial_timestamp_per_id
+    print("Starting parsing of timestamps into cumulative time...")
+    taps['ParsedDateTime'] = taps['Date'].astype(str) + " " + taps['TimeStamp']
+    taps = taps.drop(['Date', 'TimeStamp'], axis=1)  # save some memory because the df is huge
+    taps['ParsedDateTime'] = taps['ParsedDateTime'].apply(parsed_time_to_unix)
+    initial_timestamp_per_id = taps.groupby(['ID'])['ParsedDateTime'].min()
+    taps['PressTimeCumulative'] = taps.apply(diff_from_initial, axis=1)
+    taps = taps.drop(['ParsedDateTime'], axis=1)  # save some memory because the df is huge
+    filter_taps_by_col('PressTimeCumulative')
+
+
 time0 = time.time()
-print("Starting parsing of timestamps into cumulative time...")
-taps['ParsedDateTime'] = taps['Date'].astype(str) + " " + taps['TimeStamp']
-taps = taps.drop(['Date', 'TimeStamp'], axis=1)  # save some memory because the df is huge
-taps['ParsedDateTime'] = taps['ParsedDateTime'].apply(parsed_time_to_unix)
-initial_timestamp_per_id = taps.groupby(['ID'])['ParsedDateTime'].min()
-taps['PressTimeCumulative'] = taps.apply(diff_from_initial, axis=1)
-taps = taps.drop(['ParsedDateTime'], axis=1)  # save some memory because the df is huge
+parse_cumulative_timestamps()
 time1 = time.time()
-print("Parsing ended after {} milliseconds".format(time1 - time0))
-filter_taps_by_col('PressTimeCumulative')
+print("Parsing ended after {0:.2f} seconds".format(time1 - time0))
+
 
 # Group to bin indexes by PressTimeCumulative
+def build_bins():
+    global taps
+    taps["PressTimeCumulative"] = taps["PressTimeCumulative"] / 1000
+    max_press = (int(max((taps["PressTimeCumulative"])) / 90) + 1) * 90 + 1
+    user_bins = [i for i in range(0, max_press, 90)]
+    taps["binIndex"] = pd.cut((taps["PressTimeCumulative"]), user_bins)
+
+
 time0 = time.time()
-taps["PressTimeCumulative"] = taps["PressTimeCumulative"] / 1000
-max_press = (int(max((taps["PressTimeCumulative"])) / 90) + 1) * 90 + 1
-user_bins = [i for i in range(0, max_press, 90)]
-taps["binIndex"] = pd.cut((taps["PressTimeCumulative"]), user_bins)
+build_bins()
 time1 = time.time()
-print("Binning of timestamps took {} seconds".format(time1 - time0))
+print("Binning of timestamps took {0:.2f} seconds".format(time1 - time0))
 
 # ############### Save to file ###############
 
