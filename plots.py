@@ -16,9 +16,9 @@ mild_users = users[(users.Parkinsons == False) | ((users.Parkinsons == True) & (
 # ax.set_ylabel("V", fontsize=12)
 # plt.show(ax)
 #
-#pd.to_numeric(users.Age,errors='coerce')
-#users['Age'] = users['Age'].map({'nan': 0})
-#users['Age'] = users.Age.astype(int)
+pd.to_numeric(users.Age,errors='coerce')
+users['Age'] = users['Age'].map({'nan': 0})
+users['Age'] = users.Age.astype(int)
 
 #GENERAL AGES --age sick vs healthy
 ages = mild_users.dropna(subset=['Age'])
