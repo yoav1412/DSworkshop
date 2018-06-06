@@ -1,3 +1,4 @@
+from constants import *
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,66 +6,97 @@ from scipy import stats
 #import pylab
 
 
-taps = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\OUT_TAPS.csv")
-users = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\USERS.csv")
-#remove non mild people
-mild_users = users[(users.Parkinsons == False) | ((users.Parkinsons == True) & (users.Impact == "Mild"))]
+#taps = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\OUT_TAPS.csv")
+#users = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\USERS.csv")
 
 
-# ax = mild_users['Age'].plot(kind='bar', title ="Age", figsize=(15, 10), legend=True, fontsize=12)
-# ax.set_xlabel("Ages", fontsize=12)
-# ax.set_ylabel("V", fontsize=12)
-# plt.show(ax)
-#
-pd.to_numeric(users.Age,errors='coerce')
-users['Age'] = users['Age'].map({'nan': 0})
-users['Age'] = users.Age.astype(int)
+
+def add_age_column(users):
+    ages = users.copy()
+    ages = ages.dropna(subset=['BirthYear'])
+    ages['Age'] = 2018 - ages['BirthYear']
+    ages = ages.dropna(subset=['Age'])
+    return ages
+
+def keep_only_mild_users(users):
+    mild_users = users[(users.Parkinsons == False) | ((users.Parkinsons == True) & (users.Impact == "Mild"))]
+    return mild_users
+
+
+
 
 #GENERAL AGES --age sick vs healthy
-ages = mild_users.dropna(subset=['Age'])
-plt.hist(ages.Age,bins=15,histtype='bar', color='#009999')
-plt.xlabel("Age")
-plt.ylabel("")
-plt.title("Participants ages\n")
-plt.show()
+# ages = mild_users.dropna(subset=['Age'])
+# plt.hist(ages.Age,bins=15,histtype='bar', color='#009999')
+# plt.xlabel("Age")
+# plt.ylabel("")
+# plt.title("Participants ages\n")
+# plt.show()
 
-# AGES sick vs healthy
-plt.subplot(2,3,2)
-plt.hist([ages.Age[(ages.Parkinsons == True)],ages.Age[(ages.Parkinsons == False)]],bins=15,histtype='bar', color=['#FFCC00','#33CC00'],density=True)
-plt.xlabel("Age")
-plt.ylabel("")
-plt.legend(["Sick","Healthy"])
-plt.title("Participants ages\n")
-#plt.figure(figsize=(2,1))
-#plt.show()
+def ages_plot(ages):
+    # AGES sick vs healthy
+    plt.subplot(2,3,2)
+    plt.hist([ages.Age[(ages.Parkinsons == True)],ages.Age[(ages.Parkinsons == False)]],bins=15,histtype='bar', color=['#FFCC00','#33CC00'],density=True)
+    plt.xlabel("Age")
+    plt.ylabel("")
+    plt.legend(["Sick","Healthy"])
+    plt.title("Participants ages\n")
+    #plt.figure(figsize=(2,1))
+    #plt.show()
 
-#SEX
-plt.subplot(2,3,4)
-plt.pie(mild_users.Gender.value_counts(),labels=["Male","Female"], colors=["#99CCFF","#CCFFFF"],startangle=90)#'autopct='%1.1f%%')
-plt.title("Participants genders\n")
-#plt.show()
+def genders_plot(mild_users):
+    #SEX
+    plt.subplot(2,3,4)
+    plt.pie(mild_users.Gender.value_counts(),labels=["Male","Female"], colors=["#99CCFF","#CCFFFF"],startangle=90)#'autopct='%1.1f%%')
+    plt.title("Participants genders\n")
+    #plt.show()
 
-#diagnosis
-plt.subplot(2,3,5)
-plt.pie(mild_users.Parkinsons.value_counts(),labels=["Sick","Healthy"], colors=["#99CCFF","#CCFFFF"],startangle=90,autopct='%1.1f%%')
-plt.title("Parkinsons diagnosis\n")
-#plt.show()
+def diagnosis_plot(mild_users):
+    #diagnosis
+    plt.subplot(2,3,5)
+    plt.pie(mild_users.Parkinsons.value_counts(),labels=["Sick","Healthy"], colors=["#99CCFF","#CCFFFF"],startangle=90,autopct='%1.1f%%')
+    plt.title("Parkinsons diagnosis\n")
+    #plt.show()
 
-#sickness level
-plt.subplot(2,3,6)
-sick_lvl = users.loc[(users['Impact'] != "------")]
-sick_lvl = sick_lvl.dropna(subset=['Impact'])
+def sickness_level_plot(users):
+    #sickness level
+    plt.subplot(2,3,6)
+    sick_lvl = users.loc[(users['Impact'] != "------")]
+    sick_lvl = sick_lvl.dropna(subset=['Impact'])
 
-b,c,per_col = plt.pie(sick_lvl.Impact.value_counts(), labels = ["Medium","Mild","Severe"], colors=["#006666","#003366","#006633"],startangle=90,autopct='%1.1f%%')
-for per in per_col:
-    per.set_color("#FFFFFF")
-plt.title("Sickness Severity\n")
-plt.tight_layout()
-plt.show()
+    b,c,per_col = plt.pie(sick_lvl.Impact.value_counts(), labels = ["Medium","Mild","Severe"], colors=["#006666","#003366","#006633"],startangle=90,autopct='%1.1f%%')
+    for per in per_col:
+        per.set_color("#FFFFFF")
+    plt.title("Sickness Severity\n")
 
+def show_plots():
+    plt.tight_layout()
+    plt.show()
+
+mit_users = pd.read_csv(MIT_USERS_INPUT) #todo: remove
+mit_taps = pd.read_csv(MIT_TAPS_INPUT) #todo: remove
+
+def mit_updrs_distribution(mit_users):
+    b_plt = plt.boxplot([mit_users.UPDRS[mit_users.Parkinsons == False],
+                         mit_users.UPDRS[mit_users.Parkinsons == True]], labels=["Healthy", "Sick"],
+                         patch_artist=True)
+    colors = ['lightgreen', '#FF6666']
+    for patch, color in zip(b_plt['boxes'], colors):
+        patch.set_facecolor(color)
+    plt.ylabel("UPDRS")
+    plt.xlabel("")
+    plt.title("UPDRS - Healthy vs. Sick\n")
+    plt.show()
+
+def mit_diagnosis(mit_users):
+    plt.pie(mit_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+            startangle=90, autopct='%1.1f%%')
+    plt.title("Parkinsons diagnosis\n")
+    plt.show()
+'''
 feat = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\features.csv")
 
-'''''''''''sick vs. healthy'''''''''''
+###sick vs. healthy###
 sick = feat.loc[(feat['Parkinsons'] == True)]
 healthy = feat.loc[(feat['Parkinsons'] == False)]
 
@@ -76,7 +108,7 @@ healthy = feat.loc[(feat['Parkinsons'] == False)]
 # plt.title("sick - Left Flight Time mean\n")
 # plt.show()
 
-'''use the 2 following to show all wanted values from features table'''
+###use the 2 following to show all wanted values from features table###
 ####2 ovelapping histograms
 plt.subplot(2,2,1)
 sick_mean = sick.dropna(subset=['L_FlightTime_mean'])
@@ -353,7 +385,7 @@ plt.title("Healthy - mean differences in Latency - LL RR\n")
 plt.show()
 """
 
-'''''''''''mild vs. medium & severe'''''''''''
+###mild vs. medium & severe###
 mild = feat.loc[(feat['Impact'] == "Mild")]
 med_sev = feat.loc[(feat['Impact'] == "Medium") | (feat['Impact'] == "Severe")]
 
@@ -376,14 +408,14 @@ plt.show()
 ####i dont think gender division is relevant
 
 
-'''merging data'''
+###merging data###
 #merged = pd.merge(taps,users, on="ID")
 merged= pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\merged.csv")
 
 
-'''mereged - means'''
+###mereged - means###
 
-'''Latency Time'''
+###Latency Time###
 latency_mean_id = merged.groupby(["Parkinsons","ID"]).LatencyTime.mean().reset_index()
 latency_agg_id = merged.groupby(["Parkinsons","ID"]).LatencyTime.agg(stats.entropy).reset_index()
 plt.hist([latency_agg_id.LatencyTime[latency_mean_id.Parkinsons==False], latency_agg_id.LatencyTime[latency_mean_id.Parkinsons==True]],bins=20,histtype='bar', color=['#66FF99','#FF6666'], density=True)
@@ -407,7 +439,7 @@ plt.show()
 
 
 
-'''Hold Time'''
+###Hold Time###
 hold_mean_id = merged.groupby(["Parkinsons","ID"]).HoldTime.mean().reset_index()
 plt.hist([hold_mean_id.HoldTime[hold_mean_id.Parkinsons==False], hold_mean_id.HoldTime[hold_mean_id.Parkinsons==True]],bins=20,histtype='bar', color=['lightgreen','#FF6666'], density=True)
 plt.xlabel("Hold Time means")
@@ -427,7 +459,7 @@ plt.ylabel("")
 plt.title("Hold Means - Healthy vs. Sick\n")
 plt.show()
 
-'''Flight Time'''
+###Flight Time###
 flight_mean_id = merged.groupby(["Parkinsons","ID"]).FlightTime.mean().reset_index()
 plt.hist([flight_mean_id.FlightTime[flight_mean_id.Parkinsons==False], flight_mean_id.FlightTime[flight_mean_id.Parkinsons==True]],bins=20,histtype='bar', color=['lightgreen','#FF6666'], density=True)
 plt.xlabel("Flight Time means")
@@ -449,7 +481,7 @@ plt.tight_layout()
 plt.show()
 
 
-'''Latency vs. Hold+Flight'''
+###Latency vs. Hold+Flight###
 merged['Hold_plus_Flight'] = merged["HoldTime"] + merged["FlightTime"]
 merged_smaple=merged.sample(2000)
 plt.scatter(merged_smaple.LatencyTime ,merged_smaple.Hold_plus_Flight, color="#3333FF")
@@ -459,16 +491,16 @@ plt.ylabel("")
 plt.title("Latency vs. Hold+Flight\n")
 plt.show()
 
-#'''features - only mild, >2000'''
+####features - only mild, >2000###
 #final = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\final.csv")
 #
 #final_filtered = final[(final['Impact'] == "Mild")]
 #final_filtered = final_filtered[(final_filtered['total_count'] >= 2000)]
 ## final_filtered.to_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\final_filtered.csv")
 
-'''health vs. sick - only mild, >2000'''
+###health vs. sick - only mild, >2000###
 
-'''latency'''
+###latency###
 cleaned_Latency = merged[(merged.Parkinsons == False) | ((merged.Parkinsons == True) & (merged.Impact == "Mild"))].groupby(["Parkinsons","ID"]).LatencyTime.agg([np.mean,np.count_nonzero]).reset_index()
 cleaned_Latency = cleaned_Latency[(cleaned_Latency.count_nonzero >= 2000)]
 cleaned_Latency = cleaned_Latency.rename(columns = {"mean":"Latencymean"})
@@ -490,7 +522,7 @@ plt.ylabel("")
 plt.title("Latency Means - Healthy vs. Sick\n")
 plt.show()
 
-'''hold'''
+###hold###
 cleaned_Hold = merged[(merged.Parkinsons == False) | ((merged.Parkinsons == True) & (merged.Impact == "Mild"))].groupby(["Parkinsons","ID"]).LatencyTime.agg([np.mean,np.count_nonzero]).reset_index()
 cleaned_Hold = cleaned_Hold[(cleaned_Hold.count_nonzero >= 2000)]
 cleaned_Hold = cleaned_Hold.rename(columns = {"mean":"holdmean"})
@@ -512,7 +544,7 @@ plt.ylabel("")
 plt.title("Hold Means - Healthy vs. Sick\n")
 plt.show()
 
-'''Flight'''
+###Flight###
 cleaned_Flight = merged[(merged.Parkinsons == False) | ((merged.Parkinsons == True) & (merged.Impact == "Mild"))].groupby(["Parkinsons","ID"]).LatencyTime.agg([np.mean,np.count_nonzero]).reset_index()
 cleaned_Flight = cleaned_Flight[(cleaned_Flight.count_nonzero >= 2000)]
 cleaned_Flight = cleaned_Flight.rename(columns = {"mean":"Flightmean"})
@@ -565,3 +597,4 @@ try:
 except:
     pass
 user_file_df['Direction'] = user_file_df['Hand'].shift(+1) + user_file_df['Hand']
+'''
