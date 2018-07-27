@@ -15,13 +15,11 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 from sklearn.metrics import roc_auc_score
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.tree import DecisionTreeClassifier
-
+from auxiliary_functions import *
 from constants import *
 
 
-def list_diff(first, second):
-    second = set(second)
-    return [item for item in first if item not in second]
+
 
 mit_nqi_features = pd.read_csv(MIT_NQI_FEATURES)
 mit_users = pd.read_csv(MIT_USERS_INPUT)
@@ -113,11 +111,6 @@ def nqi_regression_and_pd_classification(train_data, test_data):
     predicted_test_probs = clf.predict_proba(test_final_df["predicted_nqi"].values.reshape(-1, 1))[:,1]
     test_set_auc = roc_auc_score(y_true=test_final_df["Parkinsons"], y_score=predicted_test_probs)
 
-    np.mean(cross_val_score(clf,
-                            X =test_final_df["predicted_nqi"].values.reshape(-1, 1),
-                            y=test_final_df["Parkinsons"],
-                            scoring="roc_auc",
-                            cv=10))
 
     # Sanity check with a dummy-classifier:
     dummy_clf = DummyClassifier(strategy='stratified')
@@ -131,19 +124,19 @@ def nqi_regression_and_pd_classification(train_data, test_data):
 nqi_regression_and_pd_classification(train_mit_data, test_mit_data)
 
 # Now we'll train on all of the MIT dataset. and test on the Kaggle dataset:
-kaggle_nqi_features = pd.read_csv(KAGGLE_NQI_FEATURES)
-kaggle_users_data = pd.read_csv(KAGGLE_USERS_INPUT)
-kaggle_data = kaggle_nqi_features.merge(kaggle_users_data, on="ID").dropna().reset_index().drop(["index",'Unnamed: 0'], axis=1)
-# Remove patients taking Levadopa or patients with non-mild Parkinson's:
-kaggle_data = kaggle_data[kaggle_data.Levadopa == False]
-kaggle_data = kaggle_data[kaggle_data.Parkinsons == False | ((kaggle_data.Parkinsons == True) & (kaggle_data.Impact == "Mild"))]
-nqi_regression_and_pd_classification(train_data=mit_data, test_data=kaggle_data)
+# kaggle_nqi_features = pd.read_csv(KAGGLE_NQI_FEATURES)
+# kaggle_users_data = pd.read_csv(KAGGLE_USERS_INPUT)
+# kaggle_data = kaggle_nqi_features.merge(kaggle_users_data, on="ID").dropna().reset_index().drop(["index"], axis=1)
+# # Remove patients taking Levadopa or patients with non-mild Parkinson's:
+# kaggle_data = kaggle_data[kaggle_data.Levadopa == False]
+# kaggle_data = kaggle_data[kaggle_data.Parkinsons == False | ((kaggle_data.Parkinsons == True) & (kaggle_data.Impact == "Mild"))]
+# nqi_regression_and_pd_classification(train_data=mit_data, test_data=kaggle_data)
 
 # However trying to use only the same feature to simply predict PD, gives reasonable results:
-cv_auc = np.mean(cross_val_score(estimator=GradientBoostingClassifier(),
-                         X=kaggle_data[PREDICTION_COLUMNS],
-                         y=kaggle_data["Parkinsons"],
-                         cv=5,
-                         scoring="roc_auc",
-                         n_jobs=-1))
-print(cv_auc)
+# cv_auc = np.mean(cross_val_score(estimator=GradientBoostingClassifier(),
+#                          X=kaggle_data[PREDICTION_COLUMNS],
+#                          y=kaggle_data["Parkinsons"],
+#                          cv=5,
+#                          scoring="roc_auc",
+#                          n_jobs=1))
+# print(cv_auc)

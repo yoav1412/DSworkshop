@@ -117,3 +117,8 @@ def plot_labeled_data_3d(reduced_X, y, title, group_labels =("diagnosed", "not_d
     plt.legend([b, a], group_labels)
     if show:
         plt.show()
+
+
+def list_diff(first, second):
+    second = set(second)
+    return [item for item in first if item not in second]
