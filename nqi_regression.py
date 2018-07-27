@@ -28,7 +28,7 @@ mit_users = pd.read_csv(MIT_USERS_INPUT)
 
 mit_data = mit_nqi_features.merge(mit_users, on="ID").dropna().reset_index().drop("index", axis=1)
 
-PREDICTION_COLUMNS = list_diff(mit_data.columns, ["UDPRS", "Parkinsons", 'binIndex', 'ID', 'count_nonzero'])
+PREDICTION_COLUMNS = list_diff(mit_data.columns, ["UPDRS", "Parkinsons", 'binIndex', 'ID', 'count_nonzero'])
 
 
 
@@ -43,7 +43,7 @@ def nqi_regression_and_pd_classification(train_data, test_data):
     min_max_scaler = MinMaxScaler(feature_range=(0, 1))
 
     train_X = train_data[PREDICTION_COLUMNS]
-    train_y = train_data["UDPRS"]
+    train_y = train_data["UPDRS"]
 
     train_X = pd.DataFrame(scaler.fit_transform(train_X))
     train_y = min_max_scaler.fit_transform(train_y.values.reshape(-1,1))
