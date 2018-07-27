@@ -10,8 +10,7 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
     probability that is a weighted mixture of the probability assigned by underlying estimator to each group.
     """
     def __init__(self, underlying_estimator_module_and_class, group1_var_names, group2_var_names,
-                 transformer_module_and_class,
-                 group1_weight, group2_weight, steps,
+                 steps, group1_weight=0.5, group2_weight=0.5,
                  weighting_function=None, classification_threshold=0.5, **kwargs):
         """
         :param underlying_estimator_class_name: a string holding the class name of the classifier to be
@@ -34,37 +33,13 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
             self._instantiate_class_from_module(self.underlying_estimator_module_and_class.split(" ")[0],
                                             self.underlying_estimator_module_and_class.split(" ")[1])
 
-        self.transformer_module_and_class = transformer_module_and_class
-        if self.transformer_module_and_class is None: #TODO
-            self.transformer = None
-        else:
-            self.transformer = \
-                self._instantiate_class_from_module(self.transformer_module_and_class.split(" ")[0],
-                                                    self.transformer_module_and_class.split(" ")[1])
-
         self.weighting_function = weighting_function
         self.group1_weight = group1_weight
         self.group2_weight = group2_weight
         self.classification_threshold = classification_threshold
         self.group1_X, self.group2_X = None, None
 
-
-    def fit_transform(self, X, y):
-        return #TODO
-        if self.transformer is None: #TODO
-            return
-        if not hasattr(self.transformer, "fit_transform"):
-            print("Error: transformer does not implement 'fit_transform'. can't transform")
-            return
-
-        self.group1_transformer = deepcopy(self.transformer.fit(X[self.group1_var_names], y))
-        self.group2_transformer = deepcopy(self.transformer.fit(X[self.group2_var_names], y))
-
-        self.group1_X = self.group1_transformer.transform(X[self.group1_var_names])
-        self.group2_X = self.group2_transformer.transform(X[self.group2_var_names])
-
     def fit(self, X, y):
-        self.fit_transform(X, y) # If no transformer was given, this will do nothing
         if (self.group1_X is None) or (self.group2_X is None): # i.e, no transformation was applied
             self.group1_X = X[self.group1_var_names]
             self.group2_X = X[self.group2_var_names]
@@ -87,7 +62,6 @@ class TwoGroupsWeightedModel(BaseEstimator, ClassifierMixin):
         class_predictions = probs_for_class_1 > self.classification_threshold
         return class_predictions
 
-    # TODO: if this class oly handles pipelines, no need for this..
     def _instantiate_class_from_module(self, module_name, class_name):
         module = importlib.import_module(module_name)
         class_ = getattr(module, class_name)
