@@ -127,7 +127,7 @@ def nqi_regression_and_pd_classification(train_data, test_data):
 
     print("AUC on test set: ", test_set_auc," \ndummy AUC (samity check) :", dummy_auc)
 
-
+    return test_final_df
 nqi_regression_and_pd_classification(train_mit_data, test_mit_data)
 
 # Now we'll train on all of the MIT dataset. and test on the Kaggle dataset:
