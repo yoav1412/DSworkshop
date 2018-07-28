@@ -1,14 +1,9 @@
 from constants import *
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy import stats
-#import pylab
 
-
-#taps = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\OUT_TAPS.csv")
-#users = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\USERS.csv")
-
+kaggle_taps = pd.read_csv(KAGGLE_TAPS_INPUT)  # todo: remove
+kaggle_users = pd.read_csv(KAGGLE_USERS_INPUT)  # todo: remove
 
 
 def add_age_column(users):
@@ -18,68 +13,70 @@ def add_age_column(users):
     ages = ages.dropna(subset=['Age'])
     return ages
 
+
 def keep_only_mild_users(users):
     mild_users = users[(users.Parkinsons == False) | ((users.Parkinsons == True) & (users.Impact == "Mild"))]
     return mild_users
 
 
-
-
-#GENERAL AGES --age sick vs healthy
-# ages = mild_users.dropna(subset=['Age'])
-# plt.hist(ages.Age,bins=15,histtype='bar', color='#009999')
-# plt.xlabel("Age")
-# plt.ylabel("")
-# plt.title("Participants ages\n")
-# plt.show()
-
 def ages_plot(ages):
     # AGES sick vs healthy
-    plt.subplot(2,3,2)
-    plt.hist([ages.Age[(ages.Parkinsons == True)],ages.Age[(ages.Parkinsons == False)]],bins=15,histtype='bar', color=['#FFCC00','#33CC00'],density=True)
+    plt.subplot(2, 3, 2)
+    plt.hist([ages.Age[(ages.Parkinsons == True)], ages.Age[(ages.Parkinsons == False)]], bins=15, histtype='bar',
+             color=['#FFCC00', '#33CC00'], density=True)
     plt.xlabel("Age")
     plt.ylabel("")
-    plt.legend(["Sick","Healthy"])
+    plt.legend(["Sick", "Healthy"])
     plt.title("Participants ages\n")
-    #plt.figure(figsize=(2,1))
-    #plt.show()
+    plt.figure(figsize=(2, 1))
+    plt.show()
+
 
 def genders_plot(mild_users):
-    #SEX
-    plt.subplot(2,3,4)
-    plt.pie(mild_users.Gender.value_counts(),labels=["Male","Female"], colors=["#99CCFF","#CCFFFF"],startangle=90)#'autopct='%1.1f%%')
+    plt.subplot(2, 3, 4)
+    plt.pie(mild_users.Gender.value_counts(), labels=["Male", "Female"], colors=["#99CCFF", "#CCFFFF"],
+            startangle=90)  # 'autopct='%1.1f%%')
     plt.title("Participants genders\n")
-    #plt.show()
+    plt.axis('equal')
+    plt.show()
+
 
 def diagnosis_plot(mild_users):
-    #diagnosis
-    plt.subplot(2,3,5)
-    plt.pie(mild_users.Parkinsons.value_counts(),labels=["Sick","Healthy"], colors=["#99CCFF","#CCFFFF"],startangle=90,autopct='%1.1f%%')
+    plt.subplot(2, 3, 5)
+    plt.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+            startangle=90, autopct='%1.1f%%')
     plt.title("Parkinsons diagnosis\n")
-    #plt.show()
+    plt.axis('equal')
+    plt.show()
+
 
 def sickness_level_plot(users):
-    #sickness level
-    plt.subplot(2,3,6)
+    plt.subplot(2, 3, 6)
     sick_lvl = users.loc[(users['Impact'] != "------")]
     sick_lvl = sick_lvl.dropna(subset=['Impact'])
 
-    b,c,per_col = plt.pie(sick_lvl.Impact.value_counts(), labels = ["Medium","Mild","Severe"], colors=["#006666","#003366","#006633"],startangle=90,autopct='%1.1f%%')
+    patches, texts, per_col = plt.pie(sick_lvl.Impact.value_counts(), labels=["Medium", "Mild", "Severe"],
+                                      colors=["#006666", "#003366", "#006633"], startangle=90, autopct='%1.1f%%',
+                                      textprops={'fontsize': 8})
     for per in per_col:
         per.set_color("#FFFFFF")
+    plt.axis('equal')
     plt.title("Sickness Severity\n")
+
 
 def show_plots():
     plt.tight_layout()
     plt.show()
 
-mit_users = pd.read_csv(MIT_USERS_INPUT) #todo: remove
-mit_taps = pd.read_csv(MIT_TAPS_INPUT) #todo: remove
 
-def mit_updrs_distribution(mit_users):
-    b_plt = plt.boxplot([mit_users.UPDRS[mit_users.Parkinsons == False],
-                         mit_users.UPDRS[mit_users.Parkinsons == True]], labels=["Healthy", "Sick"],
-                         patch_artist=True)
+mit_users = pd.read_csv(MIT_USERS_INPUT)  # todo: remove
+mit_taps = pd.read_csv(MIT_TAPS_INPUT)  # todo: remove
+
+
+def mit_updrs_distribution(users):
+    b_plt = plt.boxplot([users.UPDRS[users.Parkinsons == False],
+                         users.UPDRS[users.Parkinsons == True]], labels=["Healthy", "Sick"],
+                        patch_artist=True)
     colors = ['lightgreen', '#FF6666']
     for patch, color in zip(b_plt['boxes'], colors):
         patch.set_facecolor(color)
@@ -88,11 +85,15 @@ def mit_updrs_distribution(mit_users):
     plt.title("UPDRS - Healthy vs. Sick\n")
     plt.show()
 
-def mit_diagnosis(mit_users):
-    plt.pie(mit_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+
+def mit_diagnosis(users):
+    plt.pie(users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
             startangle=90, autopct='%1.1f%%')
     plt.title("Parkinsons diagnosis\n")
+    plt.axis('equal')
     plt.show()
+
+
 '''
 feat = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\features.csv")
 
