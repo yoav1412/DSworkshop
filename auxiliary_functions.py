@@ -78,46 +78,47 @@ def split_to_train_test_and_apply_scaling_and_lda_dim_reduction(X, y, train_perc
 
     return train_X, train_y, test_X, test_y
 
-def plot_labeled_data_1d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed"), show=False):
+
+def get_labeled_data_1d(reduced_X, y):
     pdt = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == True]
     pdf = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == False]
-    a = plt.scatter(pdf, [0 for i in range(len(pdf))])
-    b = plt.scatter(pdt, [0 for i in range(len(pdt))], color="red")
-    plt.title(title)
-    plt.legend([b, a], group_labels)
-    if show:
-        plt.show()
+    return pdf, [0 for i in range(len(pdf))], pdt, [0 for i in range(len(pdt))]
 
 
-def plot_labeled_data_2d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed"), show=False):
+def get_labeled_data_2d(reduced_X, y):
     x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
     x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
     x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
     x2_pd_false = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == False]
-    b = plt.scatter(x1_pd_true, x2_pd_true, color='red')
-    a = plt.scatter(x1_pd_false, x2_pd_false, color='blue')
-    plt.title(title)
-    plt.legend([b, a], group_labels)
-    if show:
-        plt.show()
+    return x1_pd_true, x2_pd_true, x1_pd_false, x2_pd_false
 
 
-def plot_labeled_data_3d(reduced_X, y, title, group_labels =("diagnosed", "not_diagnosed"), show=False):
+def get_labeled_data_3d(reduced_X, y):
     x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
     x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
     x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
     x2_pd_false = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == False]
     x3_pd_true = [reduced_X[i][2] for i in range(len(y)) if y.values[i] == True]
     x3_pd_false = [reduced_X[i][2] for i in range(len(y)) if y.values[i] == False]
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    a = ax.scatter(x1_pd_false, x2_pd_false, x3_pd_false, c='blue')
-    b = ax.scatter(x1_pd_true, x2_pd_true, x3_pd_true, c='red')
-    plt.title(title)
-    plt.legend([b, a], group_labels)
-    if show:
-        plt.show()
+    return x1_pd_false, x2_pd_false, x3_pd_false, x1_pd_true, x2_pd_true, x3_pd_true
 
+
+def plot_dimensionality_reduction(_1d_res, _2d_res, _3d_res):
+    fig = plt.figure(figsize=(18, 5))
+    ax1 = fig.add_subplot(1, 3, 1, title="Casting to 1D using PCA")
+    ax1.scatter(_1d_res[0], _1d_res[1], color='red')
+    ax1.scatter(_1d_res[2], _1d_res[3], color='blue')
+    ax1.legend(("diagnosed", "not_diagnosed"))
+
+    ax2 = fig.add_subplot(1, 3, 2, title="Casting to 2D using PCA")
+    ax2.scatter(_2d_res[0], _2d_res[1], color='red')
+    ax2.scatter(_2d_res[2], _2d_res[3], color='blue')
+    ax2.legend(("diagnosed", "not_diagnosed"))
+
+    ax3 = fig.add_subplot(1, 3, 3, projection='3d', title="Casting to 3D using PCA")
+    ax3.scatter(_3d_res[0], _3d_res[1], _3d_res[2], color='blue')
+    ax3.scatter(_3d_res[3], _3d_res[4], _3d_res[5], color='red')
+    ax3.legend(("diagnosed", "not_diagnosed"))
 
 def list_diff(first, second):
     second = set(second)
