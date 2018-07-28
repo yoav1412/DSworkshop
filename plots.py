@@ -61,25 +61,23 @@ mit_users = pd.read_csv(MIT_USERS_INPUT)  # todo: remove
 mit_taps = pd.read_csv(MIT_TAPS_INPUT)  # todo: remove
 
 
-def mit_updrs_distribution(users):
-    b_plt = plt.boxplot([users.UPDRS[users.Parkinsons == False],
+def mit_updrs_distribution(fig, users):
+    ax = fig.add_subplot(1, 2, 1, title="UPDRS - Healthy vs. Sick")
+    b_plt = ax.boxplot([users.UPDRS[users.Parkinsons == False],
                          users.UPDRS[users.Parkinsons == True]], labels=["Healthy", "Sick"],
                         patch_artist=True)
     colors = ['lightgreen', '#FF6666']
     for patch, color in zip(b_plt['boxes'], colors):
         patch.set_facecolor(color)
-    plt.ylabel("UPDRS")
-    plt.xlabel("")
-    plt.title("UPDRS - Healthy vs. Sick\n")
-    plt.show()
+    ax.set_ylabel("UPDRS")
+    ax.set_xlabel("")
 
 
-def mit_diagnosis(users):
-    plt.pie(users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+def mit_diagnosis(fig, users):
+    ax = fig.add_subplot(1, 2, 2, title="Patients distribution")
+    ax.pie(users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
             startangle=90, autopct='%1.1f%%')
-    plt.title("Parkinsons diagnosis\n")
-    plt.axis('equal')
-    plt.show()
+    ax.axis('equal')
 
 
 '''
