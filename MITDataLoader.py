@@ -1,18 +1,12 @@
-from constants import *
 import os
 import math
 import pandas as pd
 from pandas.errors import EmptyDataError
-import numpy as np
-from matplotlib import pyplot as plt
 from localConstants import *
 
 # ===============
 # Configurations:
 # ===============
-
-# if true, plots will be printed in the quantiles filter section
-SHOW_PLOTS = True
 
 USERS = MIT_DATA_FOLDER + r"\\users.csv"
 TAPS_ROOT_FOLDER = MIT_DATA_FOLDER + r"\\taps\\"
@@ -147,7 +141,7 @@ def clean_errors_and_bad_values(df):
 
     df['Hand'] = df['Hand'].apply(invalidate_hand)
     df['Direction'] = df['Direction'].apply(invalidate_direction)
-    filter_taps_by_col(df, 'Hand')
-    filter_taps_by_col(df, 'Direction')
+    df = filter_taps_by_col(df, 'Hand')
+    df = filter_taps_by_col(df, 'Direction')
     return df
 
