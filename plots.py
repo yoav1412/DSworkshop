@@ -1,11 +1,3 @@
-from constants import *
-import pandas as pd
-import matplotlib.pyplot as plt
-
-kaggle_taps = pd.read_csv(KAGGLE_TAPS_INPUT)  # todo: remove
-kaggle_users = pd.read_csv(KAGGLE_USERS_INPUT)  # todo: remove
-
-
 def add_age_column(users):
     ages = users.copy()
     ages = ages.dropna(subset=['BirthYear'])
@@ -23,24 +15,23 @@ def ages_plot(fig, ages):
     # AGES sick vs healthy
     ax = fig.add_subplot(2, 2, 1, title="Participants ages")
     ax.hist([ages.Age[(ages.Parkinsons == True)], ages.Age[(ages.Parkinsons == False)]], bins=15, histtype='bar',
-             color=['#FFCC00', '#33CC00'], density=True)
+            color=['#FFCC00', '#33CC00'], density=True)
     ax.set_xlabel("Age")
     ax.set_ylabel("")
     ax.legend(["Sick", "Healthy"])
-    # plt.figure(figsize=(2, 1))
 
 
 def genders_plot(fig, mild_users):
     ax = fig.add_subplot(2, 2, 2, title="Participants genders")
     ax.pie(mild_users.Gender.value_counts(), labels=["Male", "Female"], colors=["#99CCFF", "#CCFFFF"],
-            startangle=90)  # 'autopct='%1.1f%%')
+           startangle=90, autopct='%1.1f%%')
     ax.axis('equal')
 
 
 def diagnosis_plot(fig, mild_users):
     ax = fig.add_subplot(2, 2, 3, title="Parkinsons diagnosis")
     ax.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
-            startangle=90, autopct='%1.1f%%')
+           startangle=90, autopct='%1.1f%%')
     ax.axis('equal')
 
 
@@ -50,22 +41,18 @@ def sickness_level_plot(fig, users):
     sick_lvl = sick_lvl.dropna(subset=['Impact'])
 
     patches, texts, per_col = ax.pie(sick_lvl.Impact.value_counts(), labels=["Medium", "Mild", "Severe"],
-                                      colors=["#006666", "#003366", "#006633"], startangle=90, autopct='%1.1f%%',
-                                      textprops={'fontsize': 8})
+                                     colors=["#006666", "#003366", "#006633"], startangle=90, autopct='%1.1f%%',
+                                     textprops={'fontsize': 8})
     for per in per_col:
         per.set_color("#FFFFFF")
     ax.axis('equal')
 
 
-mit_users = pd.read_csv(MIT_USERS_INPUT)  # todo: remove
-mit_taps = pd.read_csv(MIT_TAPS_INPUT)  # todo: remove
-
-
 def mit_updrs_distribution(fig, users):
     ax = fig.add_subplot(1, 2, 1, title="UPDRS - Healthy vs. Sick")
     b_plt = ax.boxplot([users.UPDRS[users.Parkinsons == False],
-                         users.UPDRS[users.Parkinsons == True]], labels=["Healthy", "Sick"],
-                        patch_artist=True)
+                        users.UPDRS[users.Parkinsons == True]], labels=["Healthy", "Sick"],
+                       patch_artist=True)
     colors = ['lightgreen', '#FF6666']
     for patch, color in zip(b_plt['boxes'], colors):
         patch.set_facecolor(color)
@@ -76,7 +63,7 @@ def mit_updrs_distribution(fig, users):
 def mit_diagnosis(fig, users):
     ax = fig.add_subplot(1, 2, 2, title="Patients distribution")
     ax.pie(users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
-            startangle=90, autopct='%1.1f%%')
+           startangle=90, autopct='%1.1f%%')
     ax.axis('equal')
 
 
