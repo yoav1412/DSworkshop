@@ -1,4 +1,4 @@
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, roc_curve
 import pandas as pd
 import numpy as np
 from sklearn.svm import SVC, NuSVC
@@ -122,3 +122,24 @@ def plot_labeled_data_3d(reduced_X, y, title, group_labels =("diagnosed", "not_d
 def list_diff(first, second):
     second = set(second)
     return [item for item in first if item not in second]
+
+
+def plot_multiple_roc_curves(data, title):
+    """
+    :param data: a list of (a,b,c) tuples, where 'a' is the legend text for one roc line, 'b' is the true y values,
+                    and 'c' is the predicted y values.
+    :param title: the title for the whole plot
+    :return: plot multiple ROC curves on one canvas according to the data
+    """
+    import matplotlib.pyplot as plt
+    plt.title(title)
+
+    legends = []
+    for legend, y_true, y_score in data:
+        fpr, tpr, _ = roc_curve(y_true, y_score)
+        plt.plot(fpr, tpr)
+        legends.append(legend)
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.legend(legends, loc='lower right')
+    plt.show()
