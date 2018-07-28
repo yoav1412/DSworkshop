@@ -1,73 +1,54 @@
-from scipy.stats import iqr, kurtosis, skew
-import numpy as np
-import pandas as pd
-from constants import *
+from nqi_feature_creation_functions import *
 
 
+def create_nqi_features_from_raw_data_with_sides_partitions(raw_data_input_path, output_path):
+    """
+    :param raw_data_path: path to raw 'taps' data file
+    :return: creates nqi features with sides partitions (measures of patient assymetry), saves to csv and returns path to result file
+    """
+    taps = pd.read_csv(raw_data_input_path)
+    l_grouped_taps = taps[taps.Hand == "L"].groupby(["ID", "binIndex"])["HoldTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    l_grouped_taps.rename(columns={c: 'L_' + c for c in l_grouped_taps.columns}, inplace=True)
 
-def agg_outliers(series):
-    IQR = iqr(series)
-    first_quartile = np.percentile(series, 25)
-    third_quartile = np.percentile(series, 75)
-    is_outliers = []
-    for v in series.tolist():
-        is_outlier =  v <= first_quartile - 1.5*IQR \
-        or v >= third_quartile + 1.5*IQR
-        is_outliers.append(is_outlier)
-    return np.mean(is_outliers)
+    r_grouped_taps = taps[taps.Hand == "R"].groupby(["ID", "binIndex"])["HoldTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    r_grouped_taps.rename(columns={c: 'R_' + c for c in r_grouped_taps.columns}, inplace=True)
 
-def agg_iqr(series):
-    first_quartile = np.percentile(series, 25)
-    second_quartile = np.percentile(series, 50)
-    third_quartile = np.percentile(series, 75)
-    return (second_quartile - first_quartile)/(third_quartile - first_quartile)
+    lr_grouped_taps = taps[taps.Direction == "LR"].groupby(["ID", "binIndex"])["LatencyTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    lr_grouped_taps.rename(columns={c: 'LR_' + c for c in lr_grouped_taps.columns}, inplace=True)
 
-def agg_histogram(series, which_bin):
-    hist = np.histogram(series, range=(0,500), bins=4, normed=True)
-    return hist[0][which_bin]
+    ll_grouped_taps = taps[taps.Direction == "LL"].groupby(["ID", "binIndex"])["LatencyTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    ll_grouped_taps.rename(columns={c: 'LL_' + c for c in ll_grouped_taps.columns}, inplace=True)
 
-def agg_histogram_bin0(series):
-    return agg_histogram(series, 0)
+    rl_grouped_taps = taps[taps.Direction == "RL"].groupby(["ID", "binIndex"])["LatencyTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    rl_grouped_taps.rename(columns={c: 'RL_' + c for c in rl_grouped_taps.columns}, inplace=True)
 
-def agg_histogram_bin1(series):
-    return agg_histogram(series, 1)
+    rr_grouped_taps = taps[taps.Direction == "RR"].groupby(["ID", "binIndex"])["LatencyTime"].agg(
+        [agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std])
+    rr_grouped_taps.rename(columns={c: 'RR_' + c for c in rr_grouped_taps.columns}, inplace=True)
 
-def agg_histogram_bin2(series):
-    return agg_histogram(series, 2)
+    grouped_taps = l_grouped_taps.merge(r_grouped_taps, on=["ID", "binIndex"]). \
+        merge(lr_grouped_taps, on=["ID", "binIndex"]). \
+        merge(ll_grouped_taps, on=["ID", "binIndex"]). \
+        merge(rl_grouped_taps, on=["ID", "binIndex"]). \
+        merge(rr_grouped_taps, on=["ID", "binIndex"])
 
-def agg_histogram_bin3(series):
-    return agg_histogram(series, 3)
+    t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg(
+        [np.mean, agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
+         agg_histogram_bin2, agg_histogram_bin3, np.std]).reset_index()
+    nqi_calculator_input = grouped_taps.reset_index()
+    nqi_calculator_input = nqi_calculator_input.merge(t, on=["ID", "binIndex"])
+    nqi_calculator_input = nqi_calculator_input.rename(columns={"FlightTime": "mean_flight"})
 
-
-
-taps = pd.read_csv(MIT_TAPS_INPUT)
-l_grouped_taps = taps[taps.Hand == "L"].groupby(["ID", "binIndex"])["HoldTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-
-r_grouped_taps = taps[taps.Hand == "L"].groupby(["ID", "binIndex"])["HoldTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-
-lr_grouped_taps = taps[taps.Direction == "LR"].groupby(["ID", "binIndex"])["LatencyTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-ll_grouped_taps = taps[taps.Direction== "LL"].groupby(["ID", "binIndex"])["LatencyTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-rl_grouped_taps = taps[taps.Direction == "RL"].groupby(["ID", "binIndex"])["LatencyTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-rr_grouped_taps = taps[taps.Direction == "RR"].groupby(["ID", "binIndex"])["LatencyTime"].agg([agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std])
-
-
-grouped_taps = l_grouped_taps.merge(r_grouped_taps, on=["ID", "binIndex"]).\
-    merge(lr_grouped_taps, on=["ID", "binIndex"]).\
-    merge(ll_grouped_taps, on=["ID", "binIndex"]).\
-merge(rl_grouped_taps, on=["ID", "binIndex"]).\
-merge(rr_grouped_taps, on=["ID", "binIndex"])
-
-
-t = taps.groupby(["ID", "binIndex"])["FlightTime"].agg([np.mean,agg_outliers, agg_iqr, agg_histogram_bin0, agg_histogram_bin1,
-                                                    agg_histogram_bin2, agg_histogram_bin3, np.std]).reset_index()
-nqi_calculator_input = grouped_taps.reset_index()
-nqi_calculator_input = nqi_calculator_input.merge(t, on=["ID","binIndex"])
-nqi_calculator_input = nqi_calculator_input.rename(columns={"FlightTime":"mean_flight"})
-
-nqi_calculator_input.to_csv(MIT_NQI_FEATURES, index=False)
+    nqi_calculator_input.to_csv(output_path, index=False)
+    return output_path
