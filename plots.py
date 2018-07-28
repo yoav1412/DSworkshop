@@ -19,54 +19,42 @@ def keep_only_mild_users(users):
     return mild_users
 
 
-def ages_plot(ages):
+def ages_plot(fig, ages):
     # AGES sick vs healthy
-    plt.subplot(2, 3, 2)
-    plt.hist([ages.Age[(ages.Parkinsons == True)], ages.Age[(ages.Parkinsons == False)]], bins=15, histtype='bar',
+    ax = fig.add_subplot(2, 2, 1, title="Participants ages")
+    ax.hist([ages.Age[(ages.Parkinsons == True)], ages.Age[(ages.Parkinsons == False)]], bins=15, histtype='bar',
              color=['#FFCC00', '#33CC00'], density=True)
-    plt.xlabel("Age")
-    plt.ylabel("")
-    plt.legend(["Sick", "Healthy"])
-    plt.title("Participants ages\n")
-    plt.figure(figsize=(2, 1))
-    plt.show()
+    ax.set_xlabel("Age")
+    ax.set_ylabel("")
+    ax.legend(["Sick", "Healthy"])
+    # plt.figure(figsize=(2, 1))
 
 
-def genders_plot(mild_users):
-    plt.subplot(2, 3, 4)
-    plt.pie(mild_users.Gender.value_counts(), labels=["Male", "Female"], colors=["#99CCFF", "#CCFFFF"],
+def genders_plot(fig, mild_users):
+    ax = fig.add_subplot(2, 2, 2, title="Participants genders")
+    ax.pie(mild_users.Gender.value_counts(), labels=["Male", "Female"], colors=["#99CCFF", "#CCFFFF"],
             startangle=90)  # 'autopct='%1.1f%%')
-    plt.title("Participants genders\n")
-    plt.axis('equal')
-    plt.show()
+    ax.axis('equal')
 
 
-def diagnosis_plot(mild_users):
-    plt.subplot(2, 3, 5)
-    plt.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+def diagnosis_plot(fig, mild_users):
+    ax = fig.add_subplot(2, 2, 3, title="Parkinsons diagnosis")
+    ax.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
             startangle=90, autopct='%1.1f%%')
-    plt.title("Parkinsons diagnosis\n")
-    plt.axis('equal')
-    plt.show()
+    ax.axis('equal')
 
 
-def sickness_level_plot(users):
-    plt.subplot(2, 3, 6)
+def sickness_level_plot(fig, users):
+    ax = fig.add_subplot(2, 2, 4, title="Sickness Severity")
     sick_lvl = users.loc[(users['Impact'] != "------")]
     sick_lvl = sick_lvl.dropna(subset=['Impact'])
 
-    patches, texts, per_col = plt.pie(sick_lvl.Impact.value_counts(), labels=["Medium", "Mild", "Severe"],
+    patches, texts, per_col = ax.pie(sick_lvl.Impact.value_counts(), labels=["Medium", "Mild", "Severe"],
                                       colors=["#006666", "#003366", "#006633"], startangle=90, autopct='%1.1f%%',
                                       textprops={'fontsize': 8})
     for per in per_col:
         per.set_color("#FFFFFF")
-    plt.axis('equal')
-    plt.title("Sickness Severity\n")
-
-
-def show_plots():
-    plt.tight_layout()
-    plt.show()
+    ax.axis('equal')
 
 
 mit_users = pd.read_csv(MIT_USERS_INPUT)  # todo: remove
