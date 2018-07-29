@@ -1,3 +1,6 @@
+### Basic data summary plots
+
+
 def add_age_column(users):
     ages = users.copy()
     ages = ages.dropna(subset=['BirthYear'])
@@ -67,15 +70,14 @@ def mit_diagnosis(fig, users):
     ax.axis('equal')
 
 
-'''features plots'''
-
+### Kaggle features plots
 
 def LR_Hold_Time(fig, healthy, sick):
     ax = fig.add_subplot(1, 3, 1, title="Mean differences of HoldTime between Left/Right Keys")
     healthy_mean = healthy.dropna(subset=['mean_diff_L_R_HoldTime'])
     sick_mean = sick.dropna(subset=['mean_diff_L_R_HoldTime'])
     ax.hist([sick_mean.mean_diff_L_R_HoldTime, healthy_mean.mean_diff_L_R_HoldTime], bins=20, histtype='bar',
-             color=['#FF6666', 'lightgreen'], density=True)
+            color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
     ax.set_ylabel("Density")
 
@@ -85,7 +87,7 @@ def LR_RL_Latency_Time(fig, healthy, sick):
     healthy_mean = healthy.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     sick_mean = sick.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     ax.hist([sick_mean.mean_diff_LR_RL_LatencyTime, healthy_mean.mean_diff_LR_RL_LatencyTime], bins=20,
-             histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
+            histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
 
 
@@ -94,7 +96,7 @@ def LL_RR_Latency_Time(fig, healthy, sick):
     healthy_mean = healthy.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     sick_mean = sick.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     ax.hist([sick_mean.mean_diff_LL_RR_LatencyTime, healthy_mean.mean_diff_LL_RR_LatencyTime], bins=20,
-             histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
+            histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
 
 
@@ -104,7 +106,7 @@ def lFlight_mean(fig, sick, healthy):
     sick_clean = sick.dropna(subset=['L_FlightTime_mean'])
     healthy_clean = healthy.dropna(subset=['L_FlightTime_mean'])
     ax.hist([sick_clean.L_FlightTime_mean, healthy_clean.L_FlightTime_mean], bins=20, histtype='bar',
-             color=['#FF6666', 'lightgreen'], density=True)
+            color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
     ax.set_xlabel("Means")
     ax.set_ylabel("Density")
@@ -115,7 +117,7 @@ def lFlight_std(fig, sick, healthy):
     sick_clean = sick.dropna(subset=['L_FlightTime_std'])
     healthy_clean = healthy.dropna(subset=['L_FlightTime_std'])
     ax.hist([sick_clean.L_FlightTime_std, healthy_clean.L_FlightTime_std], bins=20, histtype='bar',
-             color=['#FF6666', 'lightgreen'], density=True)
+            color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
     ax.set_xlabel("Means")
     ax.set_ylabel("Density")
@@ -126,8 +128,8 @@ def lFlight_kurtosis(fig, sick, healthy):
     sick_clean = sick.dropna(subset=['L_FlightTime_kurtosis'])
     healthy_clean = healthy.dropna(subset=['L_FlightTime_kurtosis'])
     ax.hist([sick_clean.L_FlightTime_kurtosis, healthy_clean.L_FlightTime_kurtosis], bins=20, histtype='bar',
-             color=['#FF6666', 'lightgreen'],
-             density=True)
+            color=['#FF6666', 'lightgreen'],
+            density=True)
     ax.legend(["Sick", "Healthy"])
     ax.set_xlabel("Means")
     ax.set_ylabel("Density")
@@ -138,12 +140,36 @@ def lFlight_skew(fig, sick, healthy):
     sick_clean = sick.dropna(subset=['L_FlightTime_skew'])
     healthy_clean = healthy.dropna(subset=['L_FlightTime_skew'])
     ax.hist([sick_clean.L_FlightTime_skew, healthy_clean.L_FlightTime_skew], bins=20, histtype='bar',
-             color=['#FF6666', 'lightgreen'], density=True)
+            color=['#FF6666', 'lightgreen'], density=True)
     ax.legend(["Sick", "Healthy"])
     ax.set_xlabel("Means")
     ax.set_ylabel("Density")
 
 
+### MIT features plots
+
+def iqr_histogram(fig, data):
+    ax = fig.add_subplot(1, 2, 1, title="IQR of patients")
+    ax.hist([data[data.Parkinsons == True].agg_iqr, data[data.Parkinsons == False].agg_iqr],
+            color=['tomato', 'lightgreen'])
+    ax.legend(('Sick', 'Healthy'))
+
+
+def outliers_histogram(fig, data):
+    ax = fig.add_subplot(1, 2, 2, title="Outliers proportion of patients")
+    ax.hist([data[data.Parkinsons == True].agg_outliers, data[data.Parkinsons == False].agg_outliers],
+            color=['tomato', 'lightgreen'])
+    ax.legend(('Sick', 'Healthy'))
+
+
+def boxplot_nqi_score(fig, position, data, title):
+    ax = fig.add_subplot(1, 2, position, title=title)
+    ax.boxplot([data.predicted_nqi[data.Parkinsons == True], data.predicted_nqi[data.Parkinsons == False]],
+               labels=["Sick", "Healthy"], patch_artist=True)
+    ax.set_ylabel("NQI Score")
+
+
+# TODO: REMOVE ALL THOSE COMMENTS
 ###means
 '''
 # plt.hist(sick_mean.L_FlightTime_mean,bins=20,histtype='bar', color='#009999' )
