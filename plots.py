@@ -178,7 +178,3 @@ def latency_vs_hold_flight(method1_features):
     plt.xlabel("Latency Times")
     plt.ylabel("")
     plt.title("Latency vs. Hold+Flight\n")
-
-
-# TODO: REMOVE ALL THOSE COMMENTS
-
