@@ -167,14 +167,3 @@ def boxplot_nqi_score(fig, position, data, title):
     ax.boxplot([data.predicted_nqi[data.Parkinsons == True], data.predicted_nqi[data.Parkinsons == False]],
                labels=["Sick", "Healthy"], patch_artist=True)
     ax.set_ylabel("NQI Score")
-
-##TODO decide if to put this in the notebook?
-###Latency vs. Hold+Flight###
-def latency_vs_hold_flight(method1_features):
-    method1_features['Hold_plus_Flight'] = method1_features["HoldTime"] + method1_features["FlightTime"]
-    merged_sample = method1_features.sample(2000)
-    plt.scatter(merged_sample.LatencyTime ,merged_sample.Hold_plus_Flight, color="#3333FF")
-    plt.plot([0,800],[0,800], color="#00FFFF")
-    plt.xlabel("Latency Times")
-    plt.ylabel("")
-    plt.title("Latency vs. Hold+Flight\n")
