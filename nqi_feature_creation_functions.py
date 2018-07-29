@@ -39,9 +39,9 @@ def agg_histogram(series, which_bin):
     :return: the value of the requested bin in the 4 bin normalized histogram of the given values.
     """
     if len([v for v in series.values if (v>=0 and v<500)]) > 0:
-        hist = np.histogram(series, bins=4, range=(0,500), normed=True)
+                hist = np.histogram(series, bins=4, range=(0,500), normed=True)
     else: # For edge cases in aggle data, where there are no values in the (0,500) interval.
-        hist = np.histogram(series, bins=4, normed=True)
+            hist = np.histogram(series, bins=4, normed=True)
     return hist[0][which_bin]
 
 
