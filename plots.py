@@ -66,16 +66,42 @@ def mit_diagnosis(fig, users):
            startangle=90, autopct='%1.1f%%')
     ax.axis('equal')
 
-
-'''
+'''features plots'''
 feat = pd.read_csv(r"C:\\Users\\Nili\\PycharmProjects\\DSworkshop\\Data\\features.csv")
 
 ###sick vs. healthy###
 sick = feat.loc[(feat['Parkinsons'] == True)]
 healthy = feat.loc[(feat['Parkinsons'] == False)]
+cols = ['#FF6666', 'lightgreen']
+
+def LR_Hold_Time(fig, healthy, sick, cols):
+    ax1 = fig.add_subplot(1, 3, 1, title="mean differences LR Hold Time")
+    healthy_mean5 = healthy.dropna(subset=['mean_diff_L_R_HoldTime'])
+    sick_mean5 = sick.dropna(subset=['mean_diff_L_R_HoldTime'])
+    ax1.hist([sick_mean5.mean_diff_L_R_HoldTime, healthy_mean5.mean_diff_L_R_HoldTime], bins=20, histtype='bar',
+             color=cols, density=True)
+    ax1.legend(["sick", "healthy"])
+    ax1.set_ylabel("Density")
+
+def LR_RL_Latency_Time(fig, healthy, sick, cols):
+    ax2 = fig.add_subplot(1, 3, 2, title="mean differences LR-RL Latency Time")
+    healthy_mean6 = healthy.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
+    sick_mean6 = sick.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
+    ax2.hist([sick_mean6.mean_diff_LR_RL_LatencyTime, healthy_mean6.mean_diff_LR_RL_LatencyTime], bins=20,
+             histtype='bar', color=cols, density=True)
+    ax2.legend(["sick", "healthy"])
+
+def LL_RR_Latency_Time(fig, healthy, sick, cols):
+    ax3 = fig.add_subplot(1, 3, 3, title="mean differences LL-RR Latency Time")
+    healthy_mean7 = healthy.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
+    sick_mean7 = sick.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
+    ax3.hist([sick_mean7.mean_diff_LL_RR_LatencyTime, healthy_mean7.mean_diff_LL_RR_LatencyTime], bins=20,
+             histtype='bar', color=cols, density=True)
+    ax3.legend(["sick", "healthy"])
+
 
 ###means
-
+'''
 # plt.hist(sick_mean.L_FlightTime_mean,bins=20,histtype='bar', color='#009999' )
 # plt.xlabel("means")
 # plt.ylabel("")
@@ -131,51 +157,6 @@ plt.title("Left Flight Time skewness\n")
 
 plt.tight_layout()
 plt.show()
-
-### bars ###L Flight
-cols=['#FF6666','lightgreen']
-plt.subplot(2, 2, 1)
-healthy_mean5 = healthy.dropna(subset=['mean_diff_L_R_HoldTime'])
-sick_mean5 = sick.dropna(subset=['mean_diff_L_R_HoldTime'])
-plt.hist([sick_mean5.mean_diff_L_R_HoldTime,healthy_mean5.mean_diff_L_R_HoldTime],bins=20,histtype='bar', color=cols,density=True)
-plt.legend(["sick","healthy"])
-#plt.xlabel("means")
-plt.ylabel("Density")
-plt.title("mean differences LR Hold Time\n")
-
-plt.subplot(2, 2, 2)
-healthy_mean6 = healthy.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
-sick_mean6 = sick.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
-plt.hist([sick_mean6.mean_diff_LR_RL_LatencyTime,healthy_mean6.mean_diff_LR_RL_LatencyTime],bins=20,histtype='bar', color=cols,density=True)
-plt.legend(["sick","healthy"])
-#plt.xlabel("means")
-plt.ylabel("Density")
-plt.title("mean differences LR-RL Latency Time\n")
-
-plt.subplot(2, 2, 3)
-healthy_mean7 = healthy.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
-sick_mean7 = sick.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
-plt.hist([sick_mean7.mean_diff_LL_RR_LatencyTime,healthy_mean7.mean_diff_LL_RR_LatencyTime],bins=20,histtype='bar', color=cols,density=True)
-plt.legend(["sick","healthy"])
-#plt.xlabel("means")
-plt.ylabel("Density")
-plt.title("mean differences LL-RR Latency Time\n")
-
-# plt.subplot(2, 2, 4)
-# healthy_mean8 = healthy.dropna(subset=['RR_FlightTime_kurtosis'])
-# sick_mean8 = sick.dropna(subset=['RR_FlightTime_kurtosis'])
-# plt.hist([sick_mean8.RR_FlightTime_kurtosis,healthy_mean8.RR_FlightTime_kurtosis],bins=20,histtype='bar', color=cols,density=True)
-# plt.legend(["sick","healthy"])
-# #plt.xlabel("means")
-# plt.ylabel("")
-# plt.title("RR Flight Time kurtosis\n")
-# plt = gcf()
-# st = plt.suptitle("Title centered above all subplots", fontsize=14)
-#st.set_y(0.95)
-#plt.subplots_adjust(top=0.85)
-plt.tight_layout()
-plt.show()
-
 
 
 
