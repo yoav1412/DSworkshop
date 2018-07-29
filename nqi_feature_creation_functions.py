@@ -5,6 +5,11 @@ from constants import *
 
 
 def agg_outliers(series):
+    """
+    :param series:  a numeric pandas Series
+    :return: proportion of outliers in the series, where an outlier is defined as smaller than  first_quartile - 1.5*IQR
+                or larger than third_quartile + 1.5*IQR.
+    """
     IQR = iqr(series)
     first_quartile = np.percentile(series, 25)
     third_quartile = np.percentile(series, 75)
@@ -15,16 +20,17 @@ def agg_outliers(series):
         is_outliers.append(is_outlier)
     return np.mean(is_outliers)
 
+
 def agg_iqr(series):
+    """
+    :param series: a numeric pandas Series
+    :return: (second_quartile - first_quartile)/(third_quartile - first_quartile)
+    """
     first_quartile = np.percentile(series, 25)
     second_quartile = np.percentile(series, 50)
     third_quartile = np.percentile(series, 75)
-    try:
-        return (second_quartile - first_quartile)/(third_quartile - first_quartile)
-    except RuntimeWarning:
-        print("{} / {}".format((second_quartile - first_quartile) ,(third_quartile - first_quartile)))
-        print(series)
-        raise
+    return (second_quartile - first_quartile)/(third_quartile - first_quartile)
+
 
 def agg_histogram(series, which_bin):
     """
@@ -40,14 +46,18 @@ def agg_histogram(series, which_bin):
 
 # Following functions are simple wrappers so that they cn be sent as aggregators to pandas DataFrame.agg :
 
+
 def agg_histogram_bin0(series):
     return agg_histogram(series, 0)
+
 
 def agg_histogram_bin1(series):
     return agg_histogram(series, 1)
 
+
 def agg_histogram_bin2(series):
     return agg_histogram(series, 2)
+
 
 def agg_histogram_bin3(series):
     return agg_histogram(series, 3)
