@@ -58,6 +58,10 @@ def create_summary_statistics(full_data, columns_to_aggregate, aggregation_funct
     return res
 
 
+"""
+Following functions are simple wrappers so that they cn be sent as aggregators to pandas DataFrame.agg :
+"""
+
 def percnt90(series):
     return np.percentile(series, 90)
 

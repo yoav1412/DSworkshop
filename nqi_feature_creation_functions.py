@@ -44,7 +44,10 @@ def agg_histogram(series, which_bin):
         hist = np.histogram(series, bins=4, normed=True)
     return hist[0][which_bin]
 
-# Following functions are simple wrappers so that they cn be sent as aggregators to pandas DataFrame.agg :
+
+"""
+Following functions are simple wrappers so that they cn be sent as aggregators to pandas DataFrame.agg :
+"""
 
 
 def agg_histogram_bin0(series):
