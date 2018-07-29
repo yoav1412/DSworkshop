@@ -1,31 +1,19 @@
-from sklearn.metrics import roc_auc_score, roc_curve
-import pandas as pd
-import numpy as np
-from sklearn.svm import SVC, NuSVC
-
-from constants import *
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import pyplot as plt
-from sklearn.model_selection import cross_validate, cross_val_score, train_test_split, KFold, StratifiedKFold, GridSearchCV
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, AdaBoostClassifier
-from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from collections import namedtuple
-from sklearn.decomposition import PCA
-from os import cpu_count
-from TwoGroupsWeightedModel import TwoGroupsWeightedModel
-from sklearn.neural_network import MLPClassifier
-from sklearn.tree import DecisionTreeClassifier
+
+import numpy as np
+from mpl_toolkits.mplot3d import axes3d, Axes3D
+from matplotlib import pyplot as plt
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.preprocessing import StandardScaler
 
 
 def get_best_roc(models, train_X, train_y, test_X, test_y):
-    best_score = -1*float('inf')
+    best_score = -1 * float('inf')
     for model in models:
         model.fit(train_X, train_y)
-        predicted_probs = model.predict_proba(test_X)[:,1]
+        predicted_probs = model.predict_proba(test_X)[:, 1]
         scr = roc_auc_score(y_true=test_y, y_score=predicted_probs)
         if scr > best_score:
             best_score = scr
@@ -33,7 +21,8 @@ def get_best_roc(models, train_X, train_y, test_X, test_y):
     return best_score, best_model
 
 
-def evaluate_classifier_cv(clf, X, y, cross_validation_folds=10,random_split=True, round_result_to=4, scoring='accuracy'):
+def evaluate_classifier_cv(clf, X, y, cross_validation_folds=10, random_split=True, round_result_to=4,
+                           scoring='accuracy'):
     """
     :param clf: a classifier that inherrits from sklearn's BaseClassifier
     :param X: pandas df of explanatory variables
@@ -46,8 +35,9 @@ def evaluate_classifier_cv(clf, X, y, cross_validation_folds=10,random_split=Tru
     clf.fit(X, y)
     train_accuracy = clf.score(X, y)
     res = namedtuple("accuracy", "test train test_score train_score")
-    res.test = "Test accuracy ({}-fold cross validation):".format(cross_validation_folds)+str(round(test_accuracy, round_result_to))
-    res.train = "Train accuracy:"+str(round(train_accuracy, round_result_to))
+    res.test = "Test accuracy ({}-fold cross validation):".format(cross_validation_folds) + str(
+        round(test_accuracy, round_result_to))
+    res.train = "Train accuracy:" + str(round(train_accuracy, round_result_to))
     res.test_score = test_accuracy
     res.train_score = train_accuracy
     return res
@@ -104,7 +94,7 @@ def get_labeled_data_3d(reduced_X, y):
 
 
 def plot_dimensionality_reduction(_1d_res, _2d_res, _3d_res):
-    fig = plt.figure(figsize=(18, 5))
+    fig = plt.figure(figsize=(20, 5))
     ax1 = fig.add_subplot(1, 3, 1, title="Casting to 1D using PCA")
     ax1.scatter(_1d_res[0], _1d_res[1], color='red')
     ax1.scatter(_1d_res[2], _1d_res[3], color='blue')
@@ -116,9 +106,11 @@ def plot_dimensionality_reduction(_1d_res, _2d_res, _3d_res):
     ax2.legend(("diagnosed", "not_diagnosed"))
 
     ax3 = fig.add_subplot(1, 3, 3, projection='3d', title="Casting to 3D using PCA")
-    ax3.scatter(_3d_res[0], _3d_res[1], _3d_res[2], color='blue')
-    ax3.scatter(_3d_res[3], _3d_res[4], _3d_res[5], color='red')
+    ax3.title.set_position([0.5, 1])
+    ax3.scatter(_3d_res[0], _3d_res[1], _3d_res[2], color='red')
+    ax3.scatter(_3d_res[3], _3d_res[4], _3d_res[5], color='blue')
     ax3.legend(("diagnosed", "not_diagnosed"))
+
 
 def list_diff(first, second):
     second = set(second)
