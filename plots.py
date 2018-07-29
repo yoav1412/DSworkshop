@@ -30,7 +30,7 @@ def genders_plot(fig, mild_users):
 
 def diagnosis_plot(fig, mild_users):
     ax = fig.add_subplot(2, 2, 3, title="Parkinsons diagnosis")
-    ax.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#99CCFF", "#CCFFFF"],
+    ax.pie(mild_users.Parkinsons.value_counts(), labels=["Sick", "Healthy"], colors=["#c6ecc6", "#40bf40"],
            startangle=90, autopct='%1.1f%%')
     ax.axis('equal')
 
@@ -41,7 +41,7 @@ def sickness_level_plot(fig, users):
     sick_lvl = sick_lvl.dropna(subset=['Impact'])
 
     patches, texts, per_col = ax.pie(sick_lvl.Impact.value_counts(), labels=["Medium", "Mild", "Severe"],
-                                     colors=["#FFCC66", "#CC3300", "#663300"], startangle=90, autopct='%1.1f%%',
+                                     colors=["#ffcccc", "#ff4d4d", "#b30000"], startangle=90, autopct='%1.1f%%',
                                      textprops={'fontsize': 8})
     for per in per_col:
         per.set_color("#FFFFFF")
@@ -68,12 +68,14 @@ def mit_diagnosis(fig, users):
 
 
 '''features plots'''
+
+
 def LR_Hold_Time(fig, healthy, sick):
     ax1 = fig.add_subplot(1, 3, 1, title="mean differences LR Hold Time")
     healthy_mean5 = healthy.dropna(subset=['mean_diff_L_R_HoldTime'])
     sick_mean5 = sick.dropna(subset=['mean_diff_L_R_HoldTime'])
     ax1.hist([sick_mean5.mean_diff_L_R_HoldTime, healthy_mean5.mean_diff_L_R_HoldTime], bins=20, histtype='bar',
-             color=['#FF6666','lightgreen'], density=True)
+             color=['#FF6666', 'lightgreen'], density=True)
     ax1.legend(["sick", "healthy"])
     ax1.set_ylabel("Density")
 
@@ -83,7 +85,7 @@ def LR_RL_Latency_Time(fig, healthy, sick):
     healthy_mean6 = healthy.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     sick_mean6 = sick.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     ax2.hist([sick_mean6.mean_diff_LR_RL_LatencyTime, healthy_mean6.mean_diff_LR_RL_LatencyTime], bins=20,
-             histtype='bar', color=['#FF6666','lightgreen'], density=True)
+             histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
     ax2.legend(["sick", "healthy"])
 
 
@@ -92,16 +94,17 @@ def LL_RR_Latency_Time(fig, healthy, sick):
     healthy_mean7 = healthy.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     sick_mean7 = sick.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     ax3.hist([sick_mean7.mean_diff_LL_RR_LatencyTime, healthy_mean7.mean_diff_LL_RR_LatencyTime], bins=20,
-             histtype='bar', color=['#FF6666','lightgreen'], density=True)
+             histtype='bar', color=['#FF6666', 'lightgreen'], density=True)
     ax3.legend(["sick", "healthy"])
 
 
-#left flight 4 stats:
+# left flight 4 stats:
 def lFlight_mean(fig, sick, healthy):
-    ax1 = fig.add_subplot(2,2,1, title="L Flight Time mean")
+    ax1 = fig.add_subplot(2, 2, 1, title="L Flight Time mean")
     sick_1 = sick.dropna(subset=['L_FlightTime_mean'])
     healthy_1 = healthy.dropna(subset=['L_FlightTime_mean'])
-    ax1.hist([sick_1.L_FlightTime_mean, healthy_1.L_FlightTime_mean], bins=20, histtype='bar', color=['#FF6666','lightgreen'], density=True)
+    ax1.hist([sick_1.L_FlightTime_mean, healthy_1.L_FlightTime_mean], bins=20, histtype='bar',
+             color=['#FF6666', 'lightgreen'], density=True)
     ax1.legend(["sick", "healthy"])
     ax1.set_xlabel("means")
     ax1.set_ylabel("Density")
@@ -111,7 +114,8 @@ def lFlight_std(fig, sick, healthy):
     ax2 = fig.add_subplot(2, 2, 2, title="L Flight Time std")
     sick_2 = sick.dropna(subset=['L_FlightTime_std'])
     healthy_2 = healthy.dropna(subset=['L_FlightTime_std'])
-    ax2.hist([sick_2.L_FlightTime_std, healthy_2.L_FlightTime_std], bins=20, histtype='bar', color=['#FF6666','lightgreen'], density=True)
+    ax2.hist([sick_2.L_FlightTime_std, healthy_2.L_FlightTime_std], bins=20, histtype='bar',
+             color=['#FF6666', 'lightgreen'], density=True)
     ax2.legend(["sick", "healthy"])
     ax2.set_xlabel("means")
     ax2.set_ylabel("Density")
@@ -121,7 +125,8 @@ def lFlight_kurtosis(fig, sick, healthy):
     ax3 = fig.add_subplot(2, 2, 3, title="L Flight Time kurtosis")
     sick_3 = sick.dropna(subset=['L_FlightTime_kurtosis'])
     healthy_3 = healthy.dropna(subset=['L_FlightTime_kurtosis'])
-    ax3.hist([sick_3.L_FlightTime_kurtosis, healthy_3.L_FlightTime_kurtosis], bins=20, histtype='bar', color=['#FF6666','lightgreen'],
+    ax3.hist([sick_3.L_FlightTime_kurtosis, healthy_3.L_FlightTime_kurtosis], bins=20, histtype='bar',
+             color=['#FF6666', 'lightgreen'],
              density=True)
     ax3.legend(["sick", "healthy"])
     ax3.set_xlabel("means")
@@ -132,10 +137,12 @@ def lFlight_skew(fig, sick, healthy):
     ax4 = fig.add_subplot(2, 2, 4, title="L Flight Time skewness")
     sick_4 = sick.dropna(subset=['L_FlightTime_skew'])
     healthy_4 = healthy.dropna(subset=['L_FlightTime_skew'])
-    ax4.hist([sick_4.L_FlightTime_skew, healthy_4.L_FlightTime_skew], bins=20, histtype='bar', color=['#FF6666','lightgreen'], density=True)
+    ax4.hist([sick_4.L_FlightTime_skew, healthy_4.L_FlightTime_skew], bins=20, histtype='bar',
+             color=['#FF6666', 'lightgreen'], density=True)
     ax4.legend(["sick", "healthy"])
     ax4.set_xlabel("means")
     ax4.set_ylabel("Density")
+
 
 ###means
 '''
