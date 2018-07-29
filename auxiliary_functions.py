@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 def get_best_roc(models, train_X, train_y, test_X, test_y):
     best_score = -1 * float('inf')
     for model in models:
-        model.fit(train_X, train_y)
+        model.fit(train_X, np.ravel(train_y))
         predicted_probs = model.predict_proba(test_X)[:, 1]
         scr = roc_auc_score(y_true=test_y, y_score=predicted_probs)
         if scr > best_score:
@@ -58,10 +58,10 @@ def split_to_train_test_and_apply_scaling_and_lda_dim_reduction(X, y, train_perc
     test_indices = [i for i in indices if i not in train_indices]
 
     train_X = scaler.fit_transform(X.iloc[train_indices])
-    train_y = y.iloc[train_indices].values.reshape(-1, 1)
+    train_y = np.ravel(y.iloc[train_indices].values)
 
     test_X = scaler.transform(X.iloc[test_indices])
-    test_y = y.iloc[test_indices].values.reshape(-1, 1)
+    test_y = np.ravel(y.iloc[test_indices].values)
 
     train_X = lda.fit_transform(train_X, train_y)
     test_X = lda.transform(test_X)
