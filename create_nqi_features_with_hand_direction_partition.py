@@ -1,5 +1,5 @@
 from nqi_feature_creation_functions import *
-
+import pandas as pd
 
 def create_nqi_features_from_raw_data_with_sides_partitions(raw_data_input_path, output_path):
     """

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def create_summary_statistics(full_data, columns_to_aggregate, aggregation_functions):
     """
     :param full_data: pandas dataframe containing all the raw data, one line per keystroke.

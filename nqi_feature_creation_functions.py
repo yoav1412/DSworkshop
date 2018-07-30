@@ -1,7 +1,5 @@
-from scipy.stats import iqr, kurtosis, skew
+from scipy.stats import iqr
 import numpy as np
-import pandas as pd
-from constants import *
 
 
 def agg_outliers(series):
