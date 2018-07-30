@@ -1,9 +1,13 @@
-from localConstants import * #todo: remove this file
 import os
 
 # the folder containing "Tappy Data" and "Archived Users" folders with the Kaggle data,
-# and to which the output files will be saved also
-# DATA_FOLDER = os.getcwd() TODO: uncomment
+# and to which the output files will be saved also:
+DATA_FOLDER = ""
+try:
+    import localConstants # if local constants file is available, use a custom DATA_FOLDER path
+    DATA_FOLDER = localConstants.DATA_FOLDER
+except ImportError:
+    DATA_FOLDER = os.path.join(os.getcwd(), "Data")
 
 # Generated files names:
 MIT_DATA_FOLDER = os.path.join(DATA_FOLDER, "Test Data") #TODO: change name to MIT, change other filename as well to be nicer

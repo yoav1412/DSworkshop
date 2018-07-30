@@ -2,7 +2,7 @@ import os
 import math
 import pandas as pd
 from pandas.errors import EmptyDataError
-from localConstants import *
+from constants import *
 
 USERS = os.path.join(MIT_DATA_FOLDER, "users.csv")
 TAPS_ROOT_FOLDER = os.path.join(MIT_DATA_FOLDER, "taps")
