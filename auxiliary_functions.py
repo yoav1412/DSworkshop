@@ -8,6 +8,15 @@ from sklearn.preprocessing import StandardScaler
 
 
 def get_best_roc(models, train_X, train_y, test_X, test_y):
+    """
+    :param models: a collection of sklearn estimators
+    :param train_X: training features
+    :param train_y: training target
+    :param test_X:  test features
+    :param test_y:  test targer
+    :return: fits all models in the collection to train data, tests them on the test data with respect to AUC metric,
+                and returns the best AUC score and the best estimator.
+    """
     best_score = -1 * float('inf')
     for model in models:
         model.fit(train_X, np.ravel(train_y))
@@ -68,12 +77,24 @@ def split_to_train_test_and_apply_scaling_and_lda_dim_reduction(X, y, train_perc
 
 
 def get_labeled_data_1d(reduced_X, y):
+    """
+    :param reduced_X: feature matrix reduced to 1D by some dimensionality reduction technique
+    :param y: class labels for the data
+    :return: returns a tuple of the 'true'/'false' labels and their respective values. The result can be directly
+            plotted to view the labeled data with partition to classes.
+    """
     pdt = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == True]
     pdf = [reduced_X[i] for i in range(len(reduced_X)) if y.values[i] == False]
     return pdf, [0 for i in range(len(pdf))], pdt, [0 for i in range(len(pdt))]
 
 
 def get_labeled_data_2d(reduced_X, y):
+    """
+    :param reduced_X: feature matrix reduced to 2D by some dimensionality reduction technique
+    :param y: class labels for the data
+    :return: returns a tuple of the 'true'/'false' labels and their respective values. The result can be directly
+            plotted to view the labeled data with partition to classes.
+    """
     x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
     x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
     x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
@@ -82,6 +103,12 @@ def get_labeled_data_2d(reduced_X, y):
 
 
 def get_labeled_data_3d(reduced_X, y):
+    """
+    :param reduced_X: feature matrix reduced to 3D by some dimensionality reduction technique
+    :param y: class labels for the data
+    :return: returns a tuple of the 'true'/'false' labels and their respective values. The result can be directly
+            plotted in 3D to view the labeled data with partition to classes.
+    """
     x1_pd_true = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == True]
     x1_pd_false = [reduced_X[i][0] for i in range(len(y)) if y.values[i] == False]
     x2_pd_true = [reduced_X[i][1] for i in range(len(y)) if y.values[i] == True]
@@ -92,6 +119,9 @@ def get_labeled_data_3d(reduced_X, y):
 
 
 def plot_dimensionality_reduction(_1d_res, _2d_res, _3d_res):
+    """
+    :return: given the labeled data in 1\2\3 dimensions, plots the data in the relevant space with class labels.
+    """
     fig = plt.figure(figsize=(20, 5))
     ax1 = fig.add_subplot(1, 3, 1, title="Casting to 1D using PCA")
     ax1.scatter(_1d_res[0], _1d_res[1], color='red')
@@ -111,6 +141,9 @@ def plot_dimensionality_reduction(_1d_res, _2d_res, _3d_res):
 
 
 def list_diff(first, second):
+    """
+    :return: all items in first list that are not in second list.
+    """
     second = set(second)
     return [item for item in first if item not in second]
 
