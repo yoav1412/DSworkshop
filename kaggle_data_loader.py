@@ -1,16 +1,15 @@
-import constants
-import os
 import math
-import time
-import pandas as pd
-from pandas.errors import EmptyDataError
-import numpy as np
-from matplotlib import pyplot as plt
+import os
 from datetime import datetime
 
-USERS_ROOT_FOLDER = constants.DATA_FOLDER + r"\\Archived users\\"
+import pandas as pd
+from pandas.errors import EmptyDataError
+
+import constants
+
+USERS_ROOT_FOLDER = os.path.join(constants.DATA_FOLDER, "Archived users")
 USERS_FILE_NAMES = os.listdir(USERS_ROOT_FOLDER)
-TAPS_ROOT_FOLDER = constants.DATA_FOLDER + r"\\Tappy Data\\"
+TAPS_ROOT_FOLDER = os.path.join(constants.DATA_FOLDER, "Tappy Data")
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
 
 TAPS_COLUMNS = ['ID', 'Date', 'TimeStamp', 'Hand', 'HoldTime', 'Direction', 'LatencyTime', 'FlightTime']

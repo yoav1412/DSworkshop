@@ -4,13 +4,10 @@ import pandas as pd
 from pandas.errors import EmptyDataError
 from localConstants import *
 
-# ===============
-# Configurations:
-# ===============
-
-USERS = MIT_DATA_FOLDER + r"\\users.csv"
-TAPS_ROOT_FOLDER = MIT_DATA_FOLDER + r"\\taps\\"
+USERS = os.path.join(MIT_DATA_FOLDER, "users.csv")
+TAPS_ROOT_FOLDER = os.path.join(MIT_DATA_FOLDER, "taps")
 TAPS_FILE_NAMES = os.listdir(TAPS_ROOT_FOLDER)
+
 TAPS_LOAD_COLUMNS = ["Key", "HoldTime", "releaseTime", "pressTime"]
 FLOAT_COLUMNS = ["HoldTime", "LatencyTime", "FlightTime", "pressTime"]
 TAPS_COLUMNS = ["ID", "Hand", "Direction"] + FLOAT_COLUMNS
