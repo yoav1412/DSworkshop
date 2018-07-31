@@ -1,4 +1,5 @@
-### Basic data summary plots
+
+# ########## Basic data summary plots ##########
 
 
 def add_age_column(users):
@@ -70,7 +71,7 @@ def mit_diagnosis(fig, users):
     ax.axis('equal')
 
 
-### Kaggle features plots
+# ########## Kaggle features plots ##########
 
 def LR_Hold_Time(fig, healthy, sick):
     ax = fig.add_subplot(1, 3, 1, title="Mean differences of HoldTime between Left/Right Keys")
@@ -146,7 +147,7 @@ def lFlight_skew(fig, sick, healthy):
     ax.set_ylabel("Density")
 
 
-### MIT features plots
+# ########## MIT features plots ##########
 
 def iqr_histogram(fig, data):
     ax = fig.add_subplot(1, 2, 1, title="IQR of patients")

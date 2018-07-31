@@ -23,10 +23,16 @@ NEG_VALUE = "NEGATIVE_VALUE"
 NAN_VALUE = "NAN_VALUE"
 ERROR_VALUES = [NEG_VALUE, BAD_VALUE, NAN_VALUE]
 
+file_num = 0
+
 
 # ############### Create users and taps dataframes ###############
 
 def read_user_file(filename, dir_path):
+    """
+    Read and parse a user csv.
+    :return a map of all user's properties and their values.
+    """
     result = {}
     with open(dir_path + filename) as f:
         for line in f.readlines():
@@ -37,6 +43,10 @@ def read_user_file(filename, dir_path):
 
 
 def read_taps_file(filename, dir_path):
+    """
+    Read and parse a keystrokes file.
+    :return: a DataFrame of the keystrokes.
+    """
     global file_num
     file_num += 1
     if file_num % 100 == 0:
@@ -52,6 +62,10 @@ def read_taps_file(filename, dir_path):
 
 
 def create_merged_users_details_file():
+    """
+    Create a users DataFrame from all users files, and save a cache to csv.
+    :return: a users DataFrame
+    """
     users_list = []
     for file_name in USERS_FILE_NAMES:
         users_list.append(read_user_file(file_name, USERS_ROOT_FOLDER))
@@ -61,6 +75,10 @@ def create_merged_users_details_file():
 
 
 def create_merged_taps_dataframe():
+    """
+    Create a keystrokes DataFrame from all keystroke files.
+    :return: the keystrokes DataFrame
+    """
     global file_num
     taps_list = []
     file_num = 0
@@ -72,6 +90,12 @@ def create_merged_taps_dataframe():
 # ############### Update datatypes of taps dataframe and filter out bad values ###############
 
 def filter_error_values_from_column(df, col):
+    """
+    Filter out from df all row that have an error value in the given column
+    :param df: a DataFrame
+    :param col: column name
+    :return: the filtered DataFrame
+    """
     len_before = len(df)
     for err_val in ERROR_VALUES:
         df = df[df[col].astype(str) != err_val]
@@ -81,6 +105,11 @@ def filter_error_values_from_column(df, col):
 
 
 def str_to_float(s):
+    """
+    Try to convert a given string to float. if not successful, set an error value.
+    :param s: a string
+    :return: a float if successful, an error value else.
+    """
     try:
         res = float(s)
         if res < 0:
@@ -97,18 +126,11 @@ def parsed_time_to_unix(x):
     return time.mktime(strptime.timetuple()) * 1e3 + strptime.microsecond / 1e3
 
 
-def diff_from_initial(row):
-    x = BAD_VALUE
-    global initial_timestamp_per_id
-    try:
-        x = row['ParsedDateTime'] - initial_timestamp_per_id[row['ID']]
-        if x == 0:
-            x = 0.001
-    finally:
-        return x
-
-
 def clean_bad_values(df):
+    """
+    Clean the given taps dataframe from values that are not valid (wrong format/values)
+    :return: the cleaned DataFrame
+    """
     # try to convert float fields to float, set error label else, and invalidate
     for col in FLOAT_COLUMNS:
         df[col] = df[col].apply(str_to_float)
@@ -123,7 +145,11 @@ def clean_bad_values(df):
 
 
 def clean_incompatible_user_ids(df, users):
-    # invalidate all rows with invalid user ID
+    """
+    Clean dataframe from rows with data of user ids that are not valid or does not exist in 'users' dataframe.
+    :return the cleaned DataFrame
+    """
+
     df['ID'] = df['ID'].apply(lambda x: x if len(str(x)) == 10 else BAD_VALUE)
     missing_data_users_ids = set(u for u in df["ID"].values) - set(u for u in users["ID"].values)
     print("there are {} unique user IDs in the Tappy data with no entry in the Users file".format(
@@ -134,6 +160,21 @@ def clean_incompatible_user_ids(df, users):
 
 
 def add_cumulative_timestamps_column(df):
+    """
+    Based on the taps timestamps, calculate a cumulative time value for each tap.
+    Each user id has it's own cumulative reference initial timestamp ("zero-time").
+    :return: the DataFrame with the new calculated column
+    """
+    def diff_from_initial(row):
+        x = BAD_VALUE
+        global initial_timestamp_per_id
+        try:
+            x = row['ParsedDateTime'] - initial_timestamp_per_id[row['ID']]
+            if x == 0:
+                x = 0.001
+        finally:
+            return x
+
     global time, initial_timestamp_per_id
     time0 = time.time()
 

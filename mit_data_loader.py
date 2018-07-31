@@ -1,4 +1,3 @@
-import os
 import math
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -38,6 +37,10 @@ def file_to_id(filename):
 
 
 def set_hand(row):
+    """
+    :param row: a row in the taps dataframe
+    :return: The side in the keyboard of the pressed key. Some keys are ignored.
+    """
     key = str(row['Key']).lower()
     if key in RIGHT_KEYS:
         return 'R'
@@ -59,6 +62,10 @@ def set_direction(current, previous):
 
 
 def read_taps_file(filename, dir_path):
+    """
+    Read and parse a single keystrokes file.
+    :return: a dataframe of keystrokes.
+    """
     try:
         user_file_df = pd.read_csv(dir_path + filename, delimiter=',', header=None, error_bad_lines=False,
                                    names=TAPS_LOAD_COLUMNS, low_memory=False)
@@ -86,6 +93,10 @@ def read_taps_file(filename, dir_path):
 
 
 def create_merged_taps_dataframe():
+    """
+    Read all keystrokes files and merge into a dataframe
+    :return: a DataFrame with all keystrokes
+    """
     taps_list = []
     for file_name in TAPS_FILE_NAMES:
         df = read_taps_file(file_name, TAPS_ROOT_FOLDER)
@@ -94,6 +105,12 @@ def create_merged_taps_dataframe():
 
 
 def filter_taps_by_col(df, column):
+    """
+    Filter out from df all row that have an error value in the given column
+    :param df: a DataFrame
+    :param column: column name
+    :return: the filtered DataFrame
+    """
     len_before = len(df)
     for err_val in ERROR_VALUES:
         try:
@@ -106,6 +123,11 @@ def filter_taps_by_col(df, column):
 
 
 def str_to_float(s):
+    """
+    Try to convert a given string to float. if not successful, set an error value.
+    :param s: a string
+    :return: a float if successful, an error value else.
+    """
     try:
         res = float(s)
         if res < 0:
@@ -118,18 +140,30 @@ def str_to_float(s):
 
 
 def invalidate_hand(hand):
+    """
+    :return: true iff the given string is a valid keyboard side ("hand")
+    """
     if hand in HANDS:
         return hand
     return BAD_VALUE
 
 
 def invalidate_direction(direction):
+    """
+    :return: true iff the given string is a valid keyboard movement ("direction")
+    """
     if direction in DIRECTIONS:
         return direction
     return BAD_VALUE
 
 
 def clean_errors_and_bad_values(df):
+    """
+    Check for invalid values and filter the rows containig them from the given dataframe
+    :param df: the dataframe with all taps
+    :return: the cleaned DataFrame
+    """
+
     # try to convert float fields to float, set error label else, and invalidate
     for col in FLOAT_COLUMNS:
         df[col] = df[col].apply(str_to_float)
