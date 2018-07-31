@@ -150,15 +150,15 @@ def lFlight_skew(fig, sick, healthy):
 # ########## MIT features plots ##########
 
 def iqr_histogram(fig, data):
-    ax = fig.add_subplot(1, 2, 1, title="IQR of patients")
-    ax.hist([data[data.Parkinsons == True].agg_iqr, data[data.Parkinsons == False].agg_iqr],
+    ax = fig.add_subplot(1, 2, 1, title="HoldTime IQR of patients")
+    ax.hist([data[data.Parkinsons == True].hold_agg_iqr, data[data.Parkinsons == False].hold_agg_iqr],
             color=['tomato', 'lightgreen'])
     ax.legend(('Sick', 'Healthy'))
 
 
 def outliers_histogram(fig, data):
     ax = fig.add_subplot(1, 2, 2, title="Outliers proportion of patients")
-    ax.hist([data[data.Parkinsons == True].agg_outliers, data[data.Parkinsons == False].agg_outliers],
+    ax.hist([data[data.Parkinsons == True].hold_agg_outliers, data[data.Parkinsons == False].hold_agg_outliers],
             color=['tomato', 'lightgreen'])
     ax.legend(('Sick', 'Healthy'))
 
