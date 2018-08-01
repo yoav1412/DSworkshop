@@ -67,7 +67,7 @@ def read_taps_file(filename, dir_path):
     :return: a dataframe of keystrokes.
     """
     try:
-        user_file_df = pd.read_csv(dir_path + filename, delimiter=',', header=None, error_bad_lines=False,
+        user_file_df = pd.read_csv(os.path.join(dir_path, filename), delimiter=',', header=None, error_bad_lines=False,
                                    names=TAPS_LOAD_COLUMNS, low_memory=False)
         user_file_df["ID"] = file_to_id(filename)
 
