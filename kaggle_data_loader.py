@@ -1,6 +1,7 @@
 import math
 import os
 from datetime import datetime
+import time as t
 
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -123,7 +124,7 @@ def str_to_float(s):
 
 def parsed_time_to_unix(x):
     strptime = datetime.strptime(x, "%y%m%d %H:%M:%S.%f")
-    return time.mktime(strptime.timetuple()) * 1e3 + strptime.microsecond / 1e3
+    return t.mktime(strptime.timetuple()) * 1e3 + strptime.microsecond / 1e3
 
 
 def clean_bad_values(df):
@@ -175,8 +176,8 @@ def add_cumulative_timestamps_column(df):
         finally:
             return x
 
-    global time, initial_timestamp_per_id
-    time0 = time.time()
+    global initial_timestamp_per_id
+    time0 = t.time()
 
     print("Starting parsing of timestamps into cumulative time...")
     df['ParsedDateTime'] = df['Date'].astype(str) + " " + df['TimeStamp']
@@ -187,6 +188,6 @@ def add_cumulative_timestamps_column(df):
     df = df.drop(['ParsedDateTime'], axis=1)  # save some memory because the df is huge
     df = filter_error_values_from_column(df, 'PressTimeCumulative')
 
-    time = time.time() - time0
+    time = t.time() - time0
     print("Parsing ended, took {} seconds".format(round(time, 2)))
     return df
