@@ -34,7 +34,7 @@ def read_user_file(filename, dir_path):
     :return a map of all user's properties and their values.
     """
     result = {}
-    with open(dir_path + filename) as f:
+    with open(os.path.join(dir_path, filename)) as f:
         for line in f.readlines():
             result['ID'] = filename[5:-4]
             key, value = line.split(": ")
@@ -52,7 +52,7 @@ def read_taps_file(filename, dir_path):
     if file_num % 100 == 0:
         print("Loading taps files: %d/%d" % (file_num, len(TAPS_FILE_NAMES)))
     try:
-        df = pd.read_csv(dir_path + filename, delimiter='\t', header=None, error_bad_lines=False,
+        df = pd.read_csv(os.path.join(dir_path, filename), delimiter='\t', header=None, error_bad_lines=False,
                          usecols=range(8), low_memory=False)
         df.columns = TAPS_COLUMNS
     except EmptyDataError:
