@@ -1,5 +1,6 @@
 from collections import namedtuple
 import numpy as np
+from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib import pyplot as plt
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import roc_auc_score, roc_curve
