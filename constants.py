@@ -2,14 +2,7 @@ import os
 
 # the folder containing the Kaggle Data ("Tappy Data", "Archived Users") and MIT Data ("Test Data")
 # and to which the output files will be saved also:
-DATA_FOLDER = ""
-
-try:
-    import localConstants  # if local constants file is available, use a custom DATA_FOLDER path
-    DATA_FOLDER = localConstants.DATA_FOLDER
-except ImportError:
-    localConstants = None
-    DATA_FOLDER = os.path.join(os.getcwd(), "Data")
+DATA_FOLDER = os.path.join(os.getcwd(), "Data")
 
 # Raw data
 RAW_DATA_ZIP_FILENAME = "RawData.zip"
