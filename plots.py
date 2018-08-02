@@ -119,7 +119,7 @@ def LR_Hold_Time(fig, healthy, sick):
     :param healthy: a dataframe containing only healthy patient's data
     :param sick: a dataframe containing only sick patient's data
 ]    """
-    ax = fig.add_subplot(1, 3, 1, title="Mean differences of HoldTime between Left/Right Keys")
+    ax = fig.add_subplot(1, 3, 1, title="Mean diff of HoldTime between L/R Keys")
     healthy_mean = healthy.dropna(subset=['mean_diff_L_R_HoldTime'])
     sick_mean = sick.dropna(subset=['mean_diff_L_R_HoldTime'])
     ax.hist([sick_mean.mean_diff_L_R_HoldTime, healthy_mean.mean_diff_L_R_HoldTime], bins=20, histtype='bar',
@@ -136,7 +136,7 @@ def LR_RL_Latency_Time(fig, healthy, sick):
     :param healthy: a dataframe containing only healthy patient's data
     :param sick: a dataframe containing only sick patient's data
     """
-    ax = fig.add_subplot(1, 3, 2, title="Mean differences of LatencyTime between Left-to-Right/Right-to-Left movements")
+    ax = fig.add_subplot(1, 3, 2, title="Mean diff of LatencyTime between LR/RL transitions")
     healthy_mean = healthy.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     sick_mean = sick.dropna(subset=['mean_diff_LR_RL_LatencyTime'])
     ax.hist([sick_mean.mean_diff_LR_RL_LatencyTime, healthy_mean.mean_diff_LR_RL_LatencyTime], bins=20,
@@ -152,7 +152,7 @@ def LL_RR_Latency_Time(fig, healthy, sick):
     :param healthy: a dataframe containing only healthy patient's data
     :param sick: a dataframe containing only sick patient's data
     """
-    ax = fig.add_subplot(1, 3, 3, title="Mean differences of LatencyTime between Left-to-Left/Right-to-Right movements")
+    ax = fig.add_subplot(1, 3, 3, title="Mean diff of LatencyTime between LL/RR transitions")
     healthy_mean = healthy.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     sick_mean = sick.dropna(subset=['mean_diff_LL_RR_LatencyTime'])
     ax.hist([sick_mean.mean_diff_LL_RR_LatencyTime, healthy_mean.mean_diff_LL_RR_LatencyTime], bins=20,
